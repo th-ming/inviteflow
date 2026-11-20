@@ -85,8 +85,8 @@
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   const viewFrom = new THREE.Vector3(0, 1.7, 6.4);
-  const viewTo = new THREE.Vector3(0, 0.55, 4.4);
-  const lookAt = new THREE.Vector3(0, -0.25, 0);
+  const viewTo = new THREE.Vector3(0, 0.5, 4.0);
+  const lookAt = new THREE.Vector3(0, 0, 0);
   camera.position.copy(viewFrom);
   camera.lookAt(lookAt);
 
@@ -101,7 +101,7 @@
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.22, 0.7, 0.9);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.12, 0.6, 0.92);
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
 
@@ -187,12 +187,12 @@
 
   const petalGeo = petalGeometry();
   const petalMat = new THREE.MeshStandardMaterial({
-    color: 0xffd9c9, roughness: 0.5, side: THREE.DoubleSide,
-    emissive: 0xf3cfc2, emissiveIntensity: 0.25
+    color: 0xffc9b8, roughness: 0.5, side: THREE.DoubleSide,
+    emissive: 0xf3cfc2, emissiveIntensity: 0.15
   });
   const petalMatAlt = new THREE.MeshStandardMaterial({
-    color: 0xf8c6b1, roughness: 0.5, side: THREE.DoubleSide,
-    emissive: 0xefc1ad, emissiveIntensity: 0.25
+    color: 0xf6b9a3, roughness: 0.5, side: THREE.DoubleSide,
+    emissive: 0xefc1ad, emissiveIntensity: 0.15
   });
   const petals = [];
   for (let i = 0; i < 8; i += 1) {
