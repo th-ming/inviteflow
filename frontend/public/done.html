@@ -74,6 +74,8 @@
   import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
   import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
   import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+  import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+  import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
   import { hearts } from './assets/js/app.js';
 
   const host = document.getElementById('scene3d');
@@ -85,8 +87,8 @@
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   const viewFrom = new THREE.Vector3(0, 1.7, 6.4);
-  const viewTo = new THREE.Vector3(0, 0.5, 4.0);
-  const lookAt = new THREE.Vector3(0, 0, 0);
+  const viewTo = new THREE.Vector3(0.55, 0.42, 3.9);
+  const lookAt = new THREE.Vector3(-0.05, 0.02, 0);
   camera.position.copy(viewFrom);
   camera.lookAt(lookAt);
 
@@ -101,7 +103,12 @@
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.12, 0.6, 0.92);
+  const aoPass = new GTAOPass(scene, camera, 1, 1);
+  aoPass.blendIntensity = 0.8;
+  composer.addPass(aoPass);
+  const bokehPass = new BokehPass(scene, camera, { focus: 4.0, aperture: 0.00016, maxblur: 0.012 });
+  composer.addPass(bokehPass);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.1, 0.6, 0.94);
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
 
@@ -122,10 +129,33 @@
   const fill = new THREE.PointLight(0xffb27a, 6, 9, 2);
   fill.position.set(2.5, 1.5, 3);
   scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xffc08a, 1.8);
+  rim.position.set(1.5, 3, -4);
+  scene.add(rim);
+
+  function paperTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#eee2d3';
+    ctx.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 4000; i += 1) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(120,90,65,0.06)' : 'rgba(255,255,255,0.12)';
+      ctx.fillRect(x, y, 2, 2);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(3, 3);
+    return texture;
+  }
 
   const ground = new THREE.Mesh(
     new THREE.CircleGeometry(4.5, 64),
-    new THREE.MeshStandardMaterial({ color: 0xf0e5d7, roughness: 0.95 })
+    new THREE.MeshStandardMaterial({ map: paperTexture(), roughness: 0.95 })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -1.36;
@@ -181,18 +211,30 @@
       position.setZ(i, curl);
     }
     position.needsUpdate = true;
+    const colors = new Float32Array(position.count * 3);
+    const baseColor = new THREE.Color(0xc9785c);
+    const tipColor = new THREE.Color(0xffd9c9);
+    const mixed = new THREE.Color();
+    for (let i = 0; i < position.count; i += 1) {
+      const t = Math.min(1, position.getY(i) / 0.86);
+      mixed.copy(baseColor).lerp(tipColor, t);
+      colors[i * 3] = mixed.r;
+      colors[i * 3 + 1] = mixed.g;
+      colors[i * 3 + 2] = mixed.b;
+    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.computeVertexNormals();
     return geometry;
   }
 
   const petalGeo = petalGeometry();
   const petalMat = new THREE.MeshStandardMaterial({
-    color: 0xffc9b8, roughness: 0.5, side: THREE.DoubleSide,
-    emissive: 0xf3cfc2, emissiveIntensity: 0.15
+    color: 0xffffff, vertexColors: true, roughness: 0.5, side: THREE.DoubleSide,
+    emissive: 0xf3cfc2, emissiveIntensity: 0.12
   });
   const petalMatAlt = new THREE.MeshStandardMaterial({
-    color: 0xf6b9a3, roughness: 0.5, side: THREE.DoubleSide,
-    emissive: 0xefc1ad, emissiveIntensity: 0.15
+    color: 0xffffff, vertexColors: true, roughness: 0.5, side: THREE.DoubleSide,
+    emissive: 0xefc1ad, emissiveIntensity: 0.12
   });
   const petals = [];
   for (let i = 0; i < 8; i += 1) {
@@ -261,6 +303,58 @@
     })
   );
   scene.add(particles);
+
+  function glowTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255,255,255,0.9)');
+    gradient.addColorStop(0.4, 'rgba(255,220,180,0.35)');
+    gradient.addColorStop(1, 'rgba(255,220,180,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  const bokehPositions = new Float32Array(36 * 3);
+  for (let i = 0; i < 36; i += 1) {
+    bokehPositions[i * 3] = (Math.random() - 0.5) * 9;
+    bokehPositions[i * 3 + 1] = Math.random() * 3 - 0.8;
+    bokehPositions[i * 3 + 2] = -2 - Math.random() * 5;
+  }
+  const bokehGeo = new THREE.BufferGeometry();
+  bokehGeo.setAttribute('position', new THREE.BufferAttribute(bokehPositions, 3));
+  const bokeh = new THREE.Points(
+    bokehGeo,
+    new THREE.PointsMaterial({
+      size: 0.7, map: glowTexture(), transparent: true, opacity: 0.5,
+      depthWrite: false, color: 0xffd2a8
+    })
+  );
+  scene.add(bokeh);
+
+  const distantMat = new THREE.MeshStandardMaterial({ color: 0xd9b3a0, roughness: 0.9, side: THREE.DoubleSide });
+  [[-2.6, -0.7, -2.4, 0.55], [2.4, -0.55, -3.1, 0.45], [-1.6, -0.85, -4.2, 0.4], [3.2, -0.6, -4.6, 0.5]].forEach(([x, y, z, scale]) => {
+    const cluster = new THREE.Group();
+    cluster.position.set(x, y, z);
+    cluster.scale.setScalar(scale);
+    for (let i = 0; i < 6; i += 1) {
+      const pivot = new THREE.Group();
+      pivot.rotation.y = (i * Math.PI) / 3;
+      const petal = new THREE.Mesh(petalGeo, distantMat);
+      petal.rotation.x = Math.PI / 2;
+      petal.rotation.z = -0.5;
+      petal.position.y = 0.5;
+      pivot.add(petal);
+      cluster.add(pivot);
+    }
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), distantMat);
+    dot.position.y = 0.5;
+    cluster.add(dot);
+    scene.add(cluster);
+  });
 
   function resize() {
     const w = host.clientWidth;
