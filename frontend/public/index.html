@@ -46,23 +46,48 @@
     'https://i.pinimg.com/736x/a1/9c/1a/a19c1a969a8a82f5cde6a7848feaa807.jpg',
     'https://i.pinimg.com/736x/b8/d1/ae/b8d1ae6b9861b6e625b95e3b89bf9313.jpg'
   ];
-  let step = 0;
+  const colors = ['#a8492f', '#3f6f52', '#6a4f8a', '#2f6b78'];
+  const words = ['Không Nha', 'Bấm đi mà', 'Đừng ngại', 'Thử lại nha', 'Bắt được không'];
+  const panel = document.querySelector('.panel');
   const img = document.getElementById('catImage');
+  const no = document.getElementById('no');
+  let step = 0;
+  let resetTimer;
 
   img.addEventListener('error', () => { img.hidden = true; });
+
   document.getElementById('yes').addEventListener('click', () => {
     save('consent', 'Vâng');
     go('thanks.html');
   });
-  document.getElementById('no').addEventListener('click', () => {
+
+  function dodge() {
     step += 1;
     img.src = images[(step - 1) % images.length];
+    panel.style.setProperty('--accent', colors[step % colors.length]);
+
+    const area = panel.getBoundingClientRect();
+    const button = no.getBoundingClientRect();
+    const baseX = button.left - parseFloat(no.style.transform.match(/translate\(([-\d.]+)px/)?.[1] || 0);
+    const minX = area.left + 24 - baseX;
+    const maxX = area.right - 24 - button.width - baseX;
+    const dx = minX < maxX ? minX + Math.random() * (maxX - minX) : 0;
+    const dy = (Math.random() * 2 - 1) * 120;
+    no.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    no.textContent = words[step % words.length];
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { no.textContent = words[0]; }, 900);
+
     setStatus('status', 'Vẫn còn chỗ cho một câu trả lời khác.');
     if (step === 1) {
       save('consent', 'Không Nha');
       postResponse({ consent: 'Không Nha' }).catch(() => {});
     }
-  });
+  }
+
+  no.addEventListener('mouseenter', dodge);
+  no.addEventListener('click', dodge);
 </script>
 </body>
 </html>
