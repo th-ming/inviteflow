@@ -1,11 +1,18 @@
 # Deploy
 
+## Trạng thái hiện tại
+
+- FE: `https://inviteflow-fe.onrender.com` (Render static site, live).
+- API: `https://minneapolis-exhibits-hip-relates.trycloudflare.com` (Cloudflare quick tunnel tới Rust chạy local, DB GitHub).
+- DB: `th-ming/inviteflow-db/responses.json`.
+- Domain `motloimoi.cc.cd` đã thêm vào Render nhưng chưa verify — cần CNAME `motloimoi` → `inviteflow-fe.onrender.com` tại DNS Stackryze. Quick tunnel đổi URL khi restart; cần account/tunnel có tên để cố định.
+
 ## FE — Firebase Hosting
 
 1. Tạo project Firebase id `YOUR_PROJECT` (6–30 ký tự), chọn gói **Spark**.
 2. Bật Hosting, giữ `firebase.json` như cũ (`public: frontend/public`).
 3. `firebase deploy --only hosting` → site chạy tại `https://YOUR_PROJECT.web.app`.
-4. Domain đã chọn: **https://motloimoi.indevs.in** (đuôi `.indevs.in` từ Stackryze — free managed domain, repo `stackryze/FreeDomains`). Thêm domain này trong Firebase Hosting, lấy bản ghi A/TXT Firebase rồi khai ở DNS Stackryze; HTTPS do Firebase cấp.
+4. Domain đã chọn: **https://motloimoi.cc.cd** (đuôi `.indevs.in` từ Stackryze — free managed domain, repo `stackryze/FreeDomains`). Thêm domain này trong Firebase Hosting, lấy bản ghi A/TXT Firebase rồi khai ở DNS Stackryze; HTTPS do Firebase cấp.
 5. Nếu chưa kịp gắn domain tùy chỉnh, Firebase vẫn có `https://<project>.web.app` làm địa chỉ dự phòng.
 
 Kiểm tra thực tế từ bảng giá chính thức: Spark **“No payment method needed”**, Hosting 10 GB storage + 360 MB/day transfer, Realtime Database 1 GB lưu + 100 kết nối + ~10 GB/tháng. Dùng trong hạn mức này thì không phát sinh tiền.
@@ -42,7 +49,7 @@ Nếu muốn tránh cold start, dùng workflow `keep-alive.yml`, UptimeRobot ho�
 
 ## Thay placeholder
 
-Domain FE đã ghi: `motloimoi.indevs.in`. Còn lại `YOUR_API_HOST` trong 8 trang — sau khi deploy BE:
+Domain FE đã ghi: `motloimoi.cc.cd`. Còn lại `YOUR_API_HOST` trong 8 trang — sau khi deploy BE:
 
 ```
 powershell -File scripts/set-domain.ps1 -ApiBase https://<app>.leapcell.dev

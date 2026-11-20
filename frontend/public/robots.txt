@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /pages/admin.html
 
-Sitemap: https://motloimoi.indevs.in/sitemap.xml
+Sitemap: https://motloimoi.cc.cd/sitemap.xml
