@@ -79,8 +79,8 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.set(0, 1.35, 6.2);
-  camera.lookAt(0, 0.45, 0);
+  camera.position.set(0, 1.0, 4.8);
+  camera.lookAt(0, 0.5, 0);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -95,6 +95,7 @@
   scene.add(sun);
 
   const flower = new THREE.Group();
+  flower.scale.setScalar(1.25);
   scene.add(flower);
 
   const stem = new THREE.Mesh(
@@ -119,14 +120,17 @@
   const petalMat = new THREE.MeshStandardMaterial({
     color: 0xf3cfc2, roughness: 0.55, side: THREE.DoubleSide
   });
+  const petalMatAlt = new THREE.MeshStandardMaterial({
+    color: 0xefc1ad, roughness: 0.55, side: THREE.DoubleSide
+  });
   const petalGeo = new THREE.SphereGeometry(0.5, 18, 12);
   const petals = [];
   for (let i = 0; i < 8; i += 1) {
     const pivot = new THREE.Group();
     pivot.rotation.y = (i * Math.PI) / 4;
-    const petal = new THREE.Mesh(petalGeo, petalMat);
-    petal.scale.set(0.62, 0.16, 1.05);
-    petal.position.set(0, 0.62, 0.52);
+    const petal = new THREE.Mesh(petalGeo, i % 2 ? petalMat : petalMatAlt);
+    petal.scale.set(0.55, 0.13, 0.95);
+    petal.position.set(0, 0.62, 0.48);
     pivot.add(petal);
     flower.add(pivot);
     petals.push(pivot);
@@ -170,7 +174,7 @@
   function draw(t) {
     petals.forEach((pivot, i) => {
       const k = Math.min(1, Math.max(0, (t - i * 0.07) / 1.4));
-      pivot.rotation.x = -1.25 + 1.05 * easeOut(k);
+      pivot.rotation.x = -1.45 + 0.9 * easeOut(k);
     });
     const kc = Math.min(1, Math.max(0, (t - 0.5) / 1.2));
     core.scale.setScalar(0.4 + 0.6 * easeOut(kc));
@@ -180,7 +184,7 @@
   }
 
   if (reduce) {
-    petals.forEach((pivot) => { pivot.rotation.x = -0.2; });
+    petals.forEach((pivot) => { pivot.rotation.x = -0.55; });
     core.scale.setScalar(1);
     renderer.render(scene, camera);
   } else {
