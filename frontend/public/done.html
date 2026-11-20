@@ -9,7 +9,7 @@
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/done.html">
 <link rel="stylesheet" href="assets/css/style.css">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <script>window.API_BASE = window.API_BASE || 'https://minneapolis-exhibits-hip-relates.trycloudflare.com';</script>
 </head>
 <body>
@@ -28,7 +28,7 @@
         <h1>Hẹn gặp bạn</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <p class="lead">Đi đâu miễn đi cùng em là được</p>
-        <div class="scene3d" id="scene3d" role="img" aria-label="Bông hoa nở"></div>
+        <div class="scene3d" id="scene3d" role="img" aria-label="Bông hoa nở trong vườn"></div>
         <div class="receipt">
           <div class="receipt-row"><span class="receipt-label">Ngày</span><span class="receipt-value" id="day">—</span></div>
           <div class="receipt-row"><span class="receipt-label">Món</span><span class="receipt-value" id="food">—</span></div>
@@ -41,7 +41,7 @@
   </div>
 </div>
 <script type="module">
-  import { byId, read, formatDay, hearts } from './assets/js/app.js';
+  import { byId, read, formatDay } from './assets/js/app.js';
   import { postResponse } from './assets/js/api.js';
 
   byId('day').textContent = read('freeDay') ? formatDay(read('freeDay')) : 'Chưa chọn';
@@ -66,101 +66,199 @@
       ? 'Đã ghi nhận lời trả lời'
       : 'Chưa có lựa nào được ghi lại';
   }
-
-  if (read('consent') === 'Vâng') hearts(18);
 </script>
 
 <script type="module">
   import * as THREE from 'three';
-  import { read, hearts } from './assets/js/app.js';
-
-  setTimeout(() => hearts(20), 200);
+  import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+  import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+  import { hearts } from './assets/js/app.js';
 
   const host = document.getElementById('scene3d');
-  if (!host) throw new Error('scene host missing');
-
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.set(0, 1.0, 4.8);
-  camera.lookAt(0, 0.5, 0);
+  setTimeout(() => hearts(24), 300);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xf7eae3, 7, 15);
+
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  const viewFrom = new THREE.Vector3(0, 1.7, 6.4);
+  const viewTo = new THREE.Vector3(0, 0.55, 4.4);
+  const lookAt = new THREE.Vector3(0, -0.25, 0);
+  camera.position.copy(viewFrom);
+  camera.lookAt(lookAt);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearColor(0x000000, 0);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.1;
   host.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  scene.add(new THREE.HemisphereLight(0xfff1e0, 0x7a7168, 1.8));
-  const sun = new THREE.DirectionalLight(0xffd9b3, 2.6);
-  sun.position.set(3, 5, 4);
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.22, 0.7, 0.9);
+  composer.addPass(bloomPass);
+  composer.addPass(new OutputPass());
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  scene.add(new THREE.HemisphereLight(0xfff2e2, 0x8a7b6a, 1.35));
+  const sun = new THREE.DirectionalLight(0xffd9b3, 3.2);
+  sun.position.set(-3, 6, 4);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.camera.near = 0.5;
+  sun.shadow.camera.far = 20;
+  sun.shadow.camera.left = -5;
+  sun.shadow.camera.right = 5;
+  sun.shadow.camera.top = 5;
+  sun.shadow.camera.bottom = -5;
+  sun.shadow.bias = -0.0005;
   scene.add(sun);
+  const fill = new THREE.PointLight(0xffb27a, 6, 9, 2);
+  fill.position.set(2.5, 1.5, 3);
+  scene.add(fill);
+
+  const ground = new THREE.Mesh(
+    new THREE.CircleGeometry(4.5, 64),
+    new THREE.MeshStandardMaterial({ color: 0xf0e5d7, roughness: 0.95 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -1.36;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.2, 1.32, 0.16, 64),
+    new THREE.MeshStandardMaterial({ color: 0xe6d8c8, roughness: 0.8 })
+  );
+  base.position.y = -1.26;
+  base.castShadow = true;
+  base.receiveShadow = true;
+  scene.add(base);
 
   const flower = new THREE.Group();
-  flower.scale.setScalar(1.1);
-  flower.position.y = 0.15;
   scene.add(flower);
 
-  const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.035, 0.05, 1.4, 12),
-    new THREE.MeshStandardMaterial({ color: 0x4f6b4f, roughness: 0.75 })
-  );
-  stem.position.y = -0.35;
+  const stemMat = new THREE.MeshStandardMaterial({ color: 0x5b7c55, roughness: 0.75 });
+  const stemCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, -1.18, 0),
+    new THREE.Vector3(0.04, -0.6, 0.02),
+    new THREE.Vector3(-0.03, 0.05, 0),
+    new THREE.Vector3(0, 0.45, 0)
+  ]);
+  const stem = new THREE.Mesh(new THREE.TubeGeometry(stemCurve, 40, 0.045, 10, false), stemMat);
+  stem.castShadow = true;
   flower.add(stem);
 
-  const leafGeo = new THREE.SphereGeometry(0.3, 12, 8);
-  const leafMat = new THREE.MeshStandardMaterial({ color: 0x6b8a63, roughness: 0.8 });
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x75936c, roughness: 0.8, side: THREE.DoubleSide });
+  const leafGeo = new THREE.SphereGeometry(0.3, 16, 10);
   const leafLeft = new THREE.Mesh(leafGeo, leafMat);
-  leafLeft.scale.set(1, 0.22, 0.5);
-  leafLeft.position.set(-0.28, -0.25, 0);
-  leafLeft.rotation.z = 0.45;
+  leafLeft.scale.set(1.25, 0.16, 0.55);
+  leafLeft.position.set(-0.34, -0.42, 0);
+  leafLeft.rotation.z = 0.42;
+  leafLeft.castShadow = true;
   flower.add(leafLeft);
   const leafRight = leafLeft.clone();
-  leafRight.position.x = 0.28;
-  leafRight.rotation.z = -0.45;
+  leafRight.position.set(0.34, -0.05, 0.02);
+  leafRight.rotation.z = -0.42;
   flower.add(leafRight);
 
+  function petalGeometry() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.bezierCurveTo(0.28, 0.16, 0.36, 0.58, 0, 0.86);
+    shape.bezierCurveTo(-0.36, 0.58, -0.28, 0.16, 0, 0);
+    const geometry = new THREE.ShapeGeometry(shape, 24);
+    const position = geometry.attributes.position;
+    for (let i = 0; i < position.count; i += 1) {
+      const y = position.getY(i);
+      const curl = Math.sin((y / 0.86) * Math.PI) * 0.18;
+      position.setZ(i, curl);
+    }
+    position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+
+  const petalGeo = petalGeometry();
   const petalMat = new THREE.MeshStandardMaterial({
-    color: 0xffd9c9, roughness: 0.45, side: THREE.DoubleSide,
-    emissive: 0xf3cfc2, emissiveIntensity: 0.3
+    color: 0xffd9c9, roughness: 0.5, side: THREE.DoubleSide,
+    emissive: 0xf3cfc2, emissiveIntensity: 0.25
   });
   const petalMatAlt = new THREE.MeshStandardMaterial({
-    color: 0xf8c9b4, roughness: 0.45, side: THREE.DoubleSide,
-    emissive: 0xefc1ad, emissiveIntensity: 0.3
+    color: 0xf8c6b1, roughness: 0.5, side: THREE.DoubleSide,
+    emissive: 0xefc1ad, emissiveIntensity: 0.25
   });
-  const petalGeo = new THREE.SphereGeometry(0.5, 18, 12);
   const petals = [];
   for (let i = 0; i < 8; i += 1) {
     const pivot = new THREE.Group();
     pivot.rotation.y = (i * Math.PI) / 4;
     const petal = new THREE.Mesh(petalGeo, i % 2 ? petalMat : petalMatAlt);
-    petal.scale.set(0.55, 0.13, 0.95);
-    petal.position.set(0, 0.62, 0.48);
+    petal.rotation.x = Math.PI / 2;
+    petal.position.y = 0.45;
+    petal.castShadow = true;
     pivot.add(petal);
     flower.add(pivot);
     petals.push(pivot);
   }
 
   const core = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(0.22, 1),
-    new THREE.MeshStandardMaterial({ color: 0xc98a3a, roughness: 0.5 })
+    new THREE.IcosahedronGeometry(0.19, 2),
+    new THREE.MeshStandardMaterial({ color: 0xc9893a, roughness: 0.45, emissive: 0x7a4a18, emissiveIntensity: 0.2 })
   );
-  core.position.y = 0.62;
+  core.position.y = 0.45;
+  core.castShadow = true;
   flower.add(core);
 
-  const positions = new Float32Array(48 * 3);
-  for (let i = 0; i < 48; i += 1) {
-    positions[i * 3] = (Math.random() - 0.5) * 5;
-    positions[i * 3 + 1] = Math.random() * 2.6 - 0.6;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 3;
+  const stamenMat = new THREE.MeshStandardMaterial({ color: 0xe0a94e, roughness: 0.5 });
+  for (let i = 0; i < 14; i += 1) {
+    const angle = (i / 14) * Math.PI * 2;
+    const stamen = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 6), stamenMat);
+    stamen.position.set(Math.cos(angle) * 0.12, 0.55, Math.sin(angle) * 0.12);
+    stamen.rotation.z = Math.cos(angle) * 0.5;
+    stamen.rotation.x = Math.sin(angle) * 0.5;
+    flower.add(stamen);
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 6), stamenMat);
+    tip.position.set(Math.cos(angle) * 0.17, 0.62, Math.sin(angle) * 0.17);
+    flower.add(tip);
+  }
+
+  function heartTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(32, 54);
+    ctx.bezierCurveTo(4, 36, 4, 16, 18, 14);
+    ctx.bezierCurveTo(26, 13, 31, 18, 32, 22);
+    ctx.bezierCurveTo(33, 18, 38, 13, 46, 14);
+    ctx.bezierCurveTo(60, 16, 60, 36, 32, 54);
+    ctx.fill();
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  const count = 60;
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i += 1) {
+    positions[i * 3] = (Math.random() - 0.5) * 6;
+    positions[i * 3 + 1] = Math.random() * 3 - 1;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 4;
   }
   const particleGeo = new THREE.BufferGeometry();
   particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   const particles = new THREE.Points(
     particleGeo,
-    new THREE.PointsMaterial({ color: 0xa8492f, size: 0.045, transparent: true, opacity: 0.55 })
+    new THREE.PointsMaterial({
+      color: 0xb4593d, size: 0.13, map: heartTexture(),
+      transparent: true, opacity: 0.7, depthWrite: false
+    })
   );
   scene.add(particles);
 
@@ -171,34 +269,50 @@
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
+    composer.setSize(w, h);
   }
   resize();
   window.addEventListener('resize', resize);
 
+  const pointer = { x: 0, y: 0 };
+  host.addEventListener('pointermove', (event) => {
+    const rect = host.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width - 0.5) * 0.35;
+    pointer.y = ((event.clientY - rect.top) / rect.height - 0.5) * 0.2;
+  });
+  host.addEventListener('pointerleave', () => { pointer.x = 0; pointer.y = 0; });
+
   const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const start = performance.now();
 
-  function draw(t) {
+  function pose(t) {
     petals.forEach((pivot, i) => {
-      const k = Math.min(1, Math.max(0, (t - i * 0.07) / 1.4));
-      pivot.rotation.x = -1.45 + 0.9 * easeOut(k);
+      const k = Math.min(1, Math.max(0, (t - 0.25 - i * 0.08) / 1.5));
+      pivot.rotation.x = -1.4 + 0.9 * easeOut(k);
     });
-    const kc = Math.min(1, Math.max(0, (t - 0.5) / 1.2));
-    core.scale.setScalar(0.4 + 0.6 * easeOut(kc));
-    flower.rotation.y = t * 0.12;
-    particles.rotation.y = -t * 0.05;
-    renderer.render(scene, camera);
+    const kc = Math.min(1, Math.max(0, (t - 0.7) / 1.1));
+    core.scale.setScalar(0.45 + 0.55 * easeOut(kc));
+    const kf = Math.min(1, t / 1.4);
+    camera.position.lerpVectors(viewFrom, viewTo, easeInOut(kf));
+    camera.position.x += pointer.x;
+    camera.position.y += pointer.y;
+    camera.lookAt(lookAt);
+    particles.rotation.y = -t * 0.04;
   }
 
   if (reduce) {
-    petals.forEach((pivot) => { pivot.rotation.x = -0.55; });
+    petals.forEach((pivot) => { pivot.rotation.x = -0.5; });
     core.scale.setScalar(1);
-    renderer.render(scene, camera);
+    camera.position.copy(viewTo);
+    camera.lookAt(lookAt);
+    composer.render();
   } else {
     function frame(now) {
       const t = (now - start) / 1000;
-      draw(t);
-      if (t < 3) requestAnimationFrame(frame);
+      pose(t);
+      composer.render();
+      requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   }
