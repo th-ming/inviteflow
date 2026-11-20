@@ -25,7 +25,14 @@
   import { renderChoices, reveal, setStatus, go } from '../assets/js/app.js';
 
   const special = 'Nơi Có Chúng Ta';
-  renderChoices(['Công Viên', 'Rạp Phim', 'Quán Cafe', 'Nhà Ma', 'Dạo Quanh VNUA', special], 'choices', 'place', (label) => {
+  renderChoices([
+    { name: 'Công Viên', image: 'https://i.pinimg.com/736x/c9/64/58/c9645891fc4c84d400a93c00c8dc42a2.jpg' },
+    { name: 'Rạp Phim', image: 'https://i.pinimg.com/736x/1f/5e/cc/1f5ecca4b80819393a320a95d14c51d0.jpg' },
+    { name: 'Quán Cafe', image: 'https://i.pinimg.com/736x/c7/b8/fc/c7b8fcfc09f0c709458ba1e657405c15.jpg' },
+    { name: 'Nhà Ma', image: 'https://dulich9.com/wp-content/uploads/2024/01/Dia-chi-cac-nha-ma-o-Ha-Noi-03.webp' },
+    { name: 'Dạo Quanh VNUA', image: 'https://www.vnua.edu.vn/DATA/0/IMAGES/2017/07/hocvien/2017-2707hocvien004.JPG' },
+    { name: special, image: 'https://i.pinimg.com/736x/b6/08/3c/b6083cc8a66ab145ec71efce64ad96b2.jpg' }
+  ], 'choices', 'place', (label) => {
     setStatus('status', label === special
       ? 'Đi đâu miễn đi cùng em là được'
       : `Một buổi đi chơi ${label} thật tuyệt vời nhé`);

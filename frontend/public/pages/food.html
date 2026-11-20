@@ -25,7 +25,15 @@
   import { renderChoices, reveal, setStatus, go } from '../assets/js/app.js';
 
   const special = 'Ăn Gì Cũng Được';
-  renderChoices(['Cơm', 'Bún Bò', 'Phở Cuốn', 'Nem Nướng', 'Bún Cá', 'Mì Cay', special], 'choices', 'food', (label) => {
+  renderChoices([
+    { name: 'Cơm', image: 'https://i.pinimg.com/736x/ac/f2/14/acf21487e6638097f8e8922b153c1ffa.jpg' },
+    { name: 'Bún Bò', image: 'https://i.pinimg.com/736x/f4/41/e4/f441e4d163c5cc83ce64f29098ad34fa.jpg' },
+    { name: 'Phở Cuốn', image: 'https://i.pinimg.com/736x/6e/06/fe/6e06fe0a41b99505ebd6eec9175251f8.jpg' },
+    { name: 'Nem Nướng', image: 'https://i.pinimg.com/736x/dc/c9/c2/dcc9c227c62d5146b7f4785d5788dc35.jpg' },
+    { name: 'Bún Cá', image: 'https://i.pinimg.com/736x/b8/ae/1e/b8ae1e54f6f0a340c9ab911c55983f07.jpg' },
+    { name: 'Mì Cay', image: 'https://i.pinimg.com/736x/4e/a7/c2/4ea7c29e0afdbed1ac53d914a617a7fc.jpg' },
+    { name: special, image: 'https://i.pinimg.com/736x/15/c5/36/15c536783014eb6fa4bbc953021b3eb6.jpg' }
+  ], 'choices', 'food', (label) => {
     setStatus('status', label === special
       ? 'Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè'
       : `Một ${label} sẽ được phục vụ`);

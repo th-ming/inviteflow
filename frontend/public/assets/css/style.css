@@ -74,6 +74,25 @@ p:last-child { margin-bottom: 0; }
 .choice { min-height: 52px; padding: 10px 14px; text-align: left; font-size: 15px; }
 .choice[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
 
+.choice-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
+}
+
+.choice-image img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.choice-image span { font-size: 13px; }
+
 .field { width: 100%; min-height: 44px; padding: 8px 12px; }
 .moment { margin: 20px 0 4px; padding: 20px; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 12px; color: var(--accent-ink); display: flex; align-items: center; gap: 16px; }
 .moment svg { flex: none; }

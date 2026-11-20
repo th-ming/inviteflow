@@ -25,7 +25,15 @@
   import { renderChoices, reveal, setStatus, go } from '../assets/js/app.js';
 
   const special = 'Uống Gì Cũng Được';
-  renderChoices(['Trà Sữa', 'Cafe Sữa Đá', 'Nước Ép Cam', 'Sinh Tố Bơ', 'Nước Dừa', 'Trà Chanh', special], 'choices', 'drink', (label) => {
+  renderChoices([
+    { name: 'Trà Sữa', image: 'https://i.pinimg.com/736x/87/2a/09/872a0953896df1c6e757fd54b845da23.jpg' },
+    { name: 'Cafe Sữa Đá', image: 'https://i.pinimg.com/736x/1f/c8/72/1fc872840630055919672fce03723af9.jpg' },
+    { name: 'Nước Ép Cam', image: 'https://i.pinimg.com/736x/3b/5c/fc/3b5cfc41457081509f53f280020e6cd9.jpg' },
+    { name: 'Sinh Tố Bơ', image: 'https://i.pinimg.com/736x/00/d4/29/00d4296dc338a1b18c6d15ba68d9d0d3.jpg' },
+    { name: 'Nước Dừa', image: 'https://i.pinimg.com/736x/f7/46/76/f74676e64d0ccd46daf08d419c0fbe5d.jpg' },
+    { name: 'Trà Chanh', image: 'https://i.pinimg.com/736x/c6/4d/26/c64d26e91c7c1a09916bcc3223da561b.jpg' },
+    { name: special, image: 'https://i.pinimg.com/736x/6f/36/c8/6f36c874861a46b8e4208454157a1d6b.jpg' }
+  ], 'choices', 'drink', (label) => {
     setStatus('status', label === special
       ? 'Cho em chọn nhé'
       : `Một ly ${label} tuyệt vời sắp được phục vụ`);
