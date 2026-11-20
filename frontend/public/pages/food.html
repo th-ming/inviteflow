@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="Một lời mời">
+<meta property="og:description" content="Một lời mời đi chơi, gửi riêng cho một người.">
+<meta property="og:image" content="https://motloimoi.indevs.in/og-image.svg">
+<link rel="canonical" href="https://motloimoi.indevs.in/pages/food.html">
+<title>Chọn món ăn</title>
+<meta name="description" content="Chọn món ăn cho buổi hẹn.">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script>window.API_BASE = window.API_BASE || 'https://YOUR_API_HOST';</script>
+</head>
+<body>
+<main class="note">
+  <p class="eyebrow">Bước 2 trên 4</p>
+  <h1>Em muốn ăn món gì?</h1>
+  <svg class="signature" viewBox="0 0 132 10" aria-hidden="true"><path d="M2 7c22-4 55-6 128-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <div class="choice-grid" id="choices"></div>
+  <p class="status" id="status"></p>
+  <div class="actions" id="nextWrap" hidden><button type="button" class="btn btn-primary" id="next">Tiếp</button></div>
+</main>
+<script type="module">
+  import { renderChoices, reveal, setStatus, go } from '../assets/js/app.js';
+
+  const special = 'Ăn Gì Cũng Được';
+  renderChoices(['Cơm', 'Bún Bò', 'Phở Cuốn', 'Nem Nướng', 'Bún Cá', 'Mì Cay', special], 'choices', 'food', (label) => {
+    setStatus('status', label === special
+      ? 'Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè'
+      : `Một ${label} sẽ được phục vụ`);
+    reveal('nextWrap');
+  });
+  document.getElementById('next').addEventListener('click', () => go('drink.html'));
+</script>
+</body>
+</html>

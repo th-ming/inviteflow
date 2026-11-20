@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Một lời mời đi chơi">
+  <rect width="1200" height="630" fill="#f8f5f0"/>
+  <rect x="80" y="80" width="1040" height="470" rx="24" fill="#fffdf9" stroke="#e8e0d5" stroke-width="2"/>
+  <path d="M120 440c180-28 480-40 960-28" fill="none" stroke="#a94f35" stroke-width="6" stroke-linecap="round"/>
+  <text x="120" y="250" font-family="Georgia, serif" font-size="86" fill="#2b2622">Làm người yêu anh nhé?</text>
+  <text x="120" y="330" font-family="system-ui, sans-serif" font-size="34" fill="#776e64">Một buổi chiều, một ly nước, và một câu hỏi.</text>
+</svg>

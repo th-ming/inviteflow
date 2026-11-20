@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="Một lời mời">
+<meta property="og:description" content="Một lời mời đi chơi, gửi riêng cho một người.">
+<meta property="og:image" content="https://motloimoi.indevs.in/og-image.svg">
+<link rel="canonical" href="https://motloimoi.indevs.in/pages/done.html">
+<title>Hẹn gặp bạn</title>
+<meta name="description" content="Lời mời đã hoàn tất.">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script>window.API_BASE = window.API_BASE || 'https://YOUR_API_HOST';</script>
+</head>
+<body>
+<main class="note">
+  <p class="eyebrow">Xong rồi</p>
+  <h1>Hẹn gặp bạn</h1>
+  <svg class="signature" viewBox="0 0 132 10" aria-hidden="true"><path d="M2 7c22-4 55-6 128-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <svg class="bloom" viewBox="0 0 200 200" role="img" aria-label="Bông hoa nở">
+    <g class="petal" style="animation-delay:0ms"><ellipse cx="100" cy="70" rx="15" ry="36" fill="#f2d9d0" stroke="#a94f35" stroke-width="1.5"/></g>
+    <g class="petal" style="animation-delay:120ms"><ellipse cx="100" cy="70" rx="15" ry="36" fill="#f2d9d0" stroke="#a94f35" stroke-width="1.5" transform="rotate(60 100 130)"/></g>
+    <g class="petal" style="animation-delay:240ms"><ellipse cx="100" cy="70" rx="15" ry="36" fill="#f2d9d0" stroke="#a94f35" stroke-width="1.5" transform="rotate(120 100 130)"/></g>
+    <g class="petal" style="animation-delay:360ms"><ellipse cx="100" cy="70" rx="15" ry="36" fill="#f2d9d0" stroke="#a94f35" stroke-width="1.5" transform="rotate(180 100 130)"/></g>
+    <g class="petal" style="animation-delay:480ms"><ellipse cx="100" cy="70" rx="15" ry="36" fill="#f2d9d0" stroke="#a94f35" stroke-width="1.5" transform="rotate(240 100 130)"/></g>
+    <g class="petal" style="animation-delay:600ms"><ellipse cx="100" cy="70" rx="15" ry="36" fill="#f2d9d0" stroke="#a94f35" stroke-width="1.5" transform="rotate(300 100 130)"/></g>
+    <circle cx="100" cy="130" r="12" fill="#a94f35"/>
+    <path d="M100 142v46" stroke="#3f6f52" stroke-width="2" fill="none"/>
+  </svg>
+  <p class="feeling">Đi đâu miễn đi cùng em là được</p>
+  <p class="muted" id="summary"></p>
+  <p class="status" id="status"></p>
+</main>
+<script type="module">
+  import { read, formatDay, setStatus } from '../assets/js/app.js';
+  import { postResponse } from '../assets/js/api.js';
+
+  const parts = [
+    read('freeDay') ? formatDay(read('freeDay')) : '',
+    read('food'), read('drink'), read('place')
+  ].filter(Boolean);
+
+  document.getElementById('summary').textContent = parts.length
+    ? parts.join(' · ')
+    : 'Chưa có lựa nào được ghi lại';
+
+  if (read('consent') === 'Vâng' && !sessionStorage.getItem('inviteSubmitted')) {
+    sessionStorage.setItem('inviteSubmitted', '1');
+    postResponse({
+      consent: 'Vâng',
+      freeDay: read('freeDay'),
+      food: read('food'),
+      drink: read('drink'),
+      place: read('place')
+    }).then(() => setStatus('status', 'Đã ghi nhận lời trả lời'))
+      .catch((error) => setStatus('status', `Chưa ghi được: ${error.message}`));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="Một lời mời">
+<meta property="og:description" content="Một lời mời đi chơi, gửi riêng cho một người.">
+<meta property="og:image" content="https://motloimoi.indevs.in/og-image.svg">
+<link rel="canonical" href="https://motloimoi.indevs.in/pages/thanks.html">
+<title>Cảm ơn</title>
+<meta name="description" content="Cảm ơn bạn đã bấm nút.">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script>window.API_BASE = window.API_BASE || 'https://YOUR_API_HOST';</script>
+</head>
+<body>
+<main class="note">
+  <p class="eyebrow">Bước tiếp theo</p>
+  <h1>Cảm ơn bạn đã bấm nút</h1>
+  <svg class="signature" viewBox="0 0 132 10" aria-hidden="true"><path d="M2 7c22-4 55-6 128-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <div class="progress" aria-hidden="true"><span></span></div>
+  <p class="muted">Chọn một ngày mình cùng rảnh, rồi tính tiếp nhé.</p>
+  <div class="actions"><button type="button" class="btn btn-primary" id="next">Tiếp</button></div>
+  <p class="status" id="status"></p>
+</main>
+<script type="module">
+  import { go, setStatus } from '../assets/js/app.js';
+
+  const words = ['Bấm đi mà', 'Click đi', 'Thử đi', 'Đừng ngại', 'Bấm mạnh vào'];
+  const button = document.getElementById('next');
+  let busy = false;
+
+  button.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    let index = 0;
+    const timer = setInterval(() => {
+      button.textContent = words[index % words.length];
+      index += 1;
+    }, 100);
+    setTimeout(() => {
+      clearInterval(timer);
+      button.textContent = 'Tiếp';
+      busy = false;
+      setStatus('status', 'Cảm ơn bạn đã bấm nút');
+      go('date.html');
+    }, 900);
+  });
+</script>
+</body>
+</html>

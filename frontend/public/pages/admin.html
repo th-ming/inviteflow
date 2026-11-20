@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lượt trả lời</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+<script>window.API_BASE = window.API_BASE || 'https://YOUR_API_HOST';</script>
+</head>
+<body>
+
+<div class="login" id="login">
+  <p class="eyebrow">Riêng tư</p>
+  <h1>Kết nối quản lý</h1>
+  <svg class="signature" viewBox="0 0 132 10" aria-hidden="true"><path d="M2 7c22-4 55-6 128-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <label class="muted" for="token">Token quản lý</label>
+  <input class="field" type="password" id="token" autocomplete="current-password" placeholder="Dán token">
+  <div class="actions"><button type="button" class="btn btn-primary" id="connect">Kết nối</button></div>
+  <p class="status" id="loginStatus" role="status"></p>
+</div>
+
+<main class="shell" id="shell" hidden>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Riêng tư</p>
+      <h1>Lượt trả lời</h1>
+      <svg class="signature" viewBox="0 0 132 10" aria-hidden="true"><path d="M2 7c22-4 55-6 128-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="session"><span class="dot on" id="dot"></span><span id="sessionText">Đã kết nối</span></div>
+  </header>
+
+  <section class="stats" aria-label="Tổng hợp">
+    <div class="stat">
+      <span class="stat-label">Tổng lượt</span>
+      <strong class="stat-value" id="total">—</strong>
+    </div>
+    <div class="stat stat-accent">
+      <span class="stat-label">Đồng ý</span>
+      <strong class="stat-value" id="accepted">—</strong>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Danh sách</h2>
+      <button type="button" class="btn" id="clear">Xóa toàn bộ</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Thời gian</th><th>Câu trả lời</th><th>Ngày</th><th>Món</th><th>Nước</th><th>Nơi</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="empty" id="empty" hidden>Chưa có lượt trả lời nào</p>
+  </section>
+
+  <p class="status" id="status" role="status"></p>
+</main>
+
+<script type="module">
+  import { adminRequest } from '../assets/js/api.js';
+  import { byId, setStatus } from '../assets/js/app.js';
+
+  const login = byId('login');
+  const shell = byId('shell');
+  const tokenInput = byId('token');
+
+  function showLogin(message) {
+    shell.hidden = true;
+    login.hidden = false;
+    tokenInput.value = '';
+    setStatus('loginStatus', message || '');
+    tokenInput.focus();
+  }
+
+  function showShell() {
+    login.hidden = true;
+    shell.hidden = false;
+  }
+
+  function render(data) {
+    const rows = byId('rows');
+    const empty = byId('empty');
+    rows.textContent = '';
+
+    const total = data.length;
+    byId('total').textContent = String(total);
+    byId('accepted').textContent = String(data.filter((item) => item.consent === 'Vâng').length);
+    byId('sessionText').textContent = `Đã kết nối · ${total} lượt`;
+    empty.hidden = total > 0;
+    setStatus('status', '');
+
+    data.forEach((item) => {
+      const tr = document.createElement('tr');
+      ['created_at', 'consent', 'free_day', 'food', 'drink', 'place'].forEach((field) => {
+        const td = document.createElement('td');
+        td.textContent = item[field] || '';
+        tr.appendChild(td);
+      });
+
+      const action = document.createElement('td');
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn';
+      del.textContent = 'Xóa';
+      del.addEventListener('click', async () => {
+        try {
+          await adminRequest(`/api/responses/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
+          await load();
+        } catch (error) {
+          setStatus('status', error.message);
+        }
+      });
+      action.appendChild(del);
+      tr.appendChild(action);
+      rows.appendChild(tr);
+    });
+  }
+
+  async function load() {
+    if (!sessionStorage.getItem('adminToken')) {
+      showLogin();
+      return;
+    }
+    showShell();
+    try {
+      render(await adminRequest('/api/responses'));
+    } catch (error) {
+      showLogin(error.message);
+    }
+  }
+
+  async function connect() {
+    const token = tokenInput.value.trim();
+    if (!token) {
+      setStatus('loginStatus', 'Nhập token để tiếp tục');
+      return;
+    }
+    sessionStorage.setItem('adminToken', token);
+    await load();
+  }
+
+  byId('connect').addEventListener('click', connect);
+  tokenInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') connect();
+  });
+
+  byId('clear').addEventListener('click', async () => {
+    if (!confirm('Xóa toàn bộ lượt trả lời?')) return;
+    try {
+      await adminRequest('/api/responses', { method: 'DELETE' });
+      await load();
+    } catch (error) {
+      setStatus('status', error.message);
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>
