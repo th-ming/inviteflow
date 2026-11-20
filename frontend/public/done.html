@@ -74,7 +74,7 @@
   import * as THREE from 'three';
   import { read, hearts } from './assets/js/app.js';
 
-  if (read('consent') === 'Vâng') hearts(18);
+  setTimeout(() => hearts(20), 200);
 
   const host = document.getElementById('scene3d');
   if (!host) throw new Error('scene host missing');
