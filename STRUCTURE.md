@@ -50,7 +50,7 @@ inviteflow/
 ## Luồng
 
 ```
-FE (Render static) -> API (Cloudflare tunnel -> Rust) -> GitHub JSON DB
+FE (Render static) -> API (Render Rust web service) -> GitHub JSON DB
 ```
 
 ## Đổi tên miền

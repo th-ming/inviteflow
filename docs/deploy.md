@@ -4,11 +4,11 @@
 
 - **FE**: Render static site `inviteflow-fe` → `https://inviteflow-fe.onrender.com`.
 - **Domain chính**: `https://motloimoi.cc.cd` — đã verify trong Render, CNAME `@` → `inviteflow-fe.onrender.com` khai trong DNSHE.
-- **API**: Cloudflare quick tunnel `https://minneapolis-exhibits-hip-relates.trycloudflare.com` → Rust chạy local cổng 8787.
+- **API**: Render web service `inviteflow-api2` → `https://inviteflow-api2.onrender.com` (Rust native, build `cargo build --release`, start `./target/release/inviteflow-api`, rootDir `backend`).
 - **DB**: GitHub repo `th-ming/inviteflow-db`, file `responses.json` (GitHub Contents API).
-- **Admin**: `https://motloimoi.cc.cd/pages/admin.html`, token mặc định `inviteflow-admin-2026`.
+- **Admin**: `https://motloimoi.cc.cd/admin.html`. Token: `inviteflow-admin-2026` (admin), `inviteflow-editor-2026` (editor), `inviteflow-viewer-2026` (viewer).
 
-Quick tunnel đổi URL khi restart. Muốn cố định cần named tunnel (Cloudflare account) hoặc host BE có domain riêng.
+Không còn dùng quick tunnel. IP thật lấy từ header `cf-connecting-ip`, tra địa lý qua `ipwho.is`.
 
 ## DNSHE
 
