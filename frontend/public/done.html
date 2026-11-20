@@ -9,6 +9,7 @@
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/done.html">
 <link rel="stylesheet" href="assets/css/style.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}</script>
 <script>window.API_BASE = window.API_BASE || 'https://minneapolis-exhibits-hip-relates.trycloudflare.com';</script>
 </head>
 <body>
@@ -27,15 +28,7 @@
         <h1>Hẹn gặp bạn</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <p class="lead">Đi đâu miễn đi cùng em là được</p>
-        <svg class="bloom" viewBox="0 0 160 160" role="img" aria-label="Bông hoa nở">
-          <g class="petal" style="animation-delay:0ms"><ellipse cx="80" cy="52" rx="11" ry="28" fill="#f7eae3" stroke="#a8492f" stroke-width="1.5"/></g>
-          <g class="petal" style="animation-delay:60ms"><ellipse cx="80" cy="52" rx="11" ry="28" fill="#f7eae3" stroke="#a8492f" stroke-width="1.5" transform="rotate(60 80 96)"/></g>
-          <g class="petal" style="animation-delay:120ms"><ellipse cx="80" cy="52" rx="11" ry="28" fill="#f7eae3" stroke="#a8492f" stroke-width="1.5" transform="rotate(120 80 96)"/></g>
-          <g class="petal" style="animation-delay:180ms"><ellipse cx="80" cy="52" rx="11" ry="28" fill="#f7eae3" stroke="#a8492f" stroke-width="1.5" transform="rotate(180 80 96)"/></g>
-          <g class="petal" style="animation-delay:240ms"><ellipse cx="80" cy="52" rx="11" ry="28" fill="#f7eae3" stroke="#a8492f" stroke-width="1.5" transform="rotate(240 80 96)"/></g>
-          <g class="petal" style="animation-delay:300ms"><ellipse cx="80" cy="52" rx="11" ry="28" fill="#f7eae3" stroke="#a8492f" stroke-width="1.5" transform="rotate(300 80 96)"/></g>
-          <circle cx="80" cy="96" r="8" fill="#a8492f"/>
-        </svg>
+        <div class="scene3d" id="scene3d" role="img" aria-label="Bông hoa nở"></div>
         <div class="receipt">
           <div class="receipt-row"><span class="receipt-label">Ngày</span><span class="receipt-value" id="day">—</span></div>
           <div class="receipt-row"><span class="receipt-label">Món</span><span class="receipt-value" id="food">—</span></div>
@@ -48,7 +41,7 @@
   </div>
 </div>
 <script type="module">
-  import { byId, read, formatDay } from './assets/js/app.js';
+  import { byId, read, formatDay, hearts } from './assets/js/app.js';
   import { postResponse } from './assets/js/api.js';
 
   byId('day').textContent = read('freeDay') ? formatDay(read('freeDay')) : 'Chưa chọn';
@@ -72,6 +65,131 @@
     byId('statusText').textContent = read('consent') === 'Vâng'
       ? 'Đã ghi nhận lời trả lời'
       : 'Chưa có lựa nào được ghi lại';
+  }
+
+  if (read('consent') === 'Vâng') hearts(18);
+</script>
+
+<script type="module">
+  import * as THREE from 'three';
+
+  const host = document.getElementById('scene3d');
+  if (!host) throw new Error('scene host missing');
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 1.35, 6.2);
+  camera.lookAt(0, 0.45, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  host.appendChild(renderer.domElement);
+
+  scene.add(new THREE.HemisphereLight(0xfff1e0, 0x7a7168, 1.8));
+  const sun = new THREE.DirectionalLight(0xffd9b3, 2.6);
+  sun.position.set(3, 5, 4);
+  scene.add(sun);
+
+  const flower = new THREE.Group();
+  scene.add(flower);
+
+  const stem = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.035, 0.05, 1.4, 12),
+    new THREE.MeshStandardMaterial({ color: 0x4f6b4f, roughness: 0.75 })
+  );
+  stem.position.y = -0.35;
+  flower.add(stem);
+
+  const leafGeo = new THREE.SphereGeometry(0.3, 12, 8);
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x6b8a63, roughness: 0.8 });
+  const leafLeft = new THREE.Mesh(leafGeo, leafMat);
+  leafLeft.scale.set(1, 0.22, 0.5);
+  leafLeft.position.set(-0.28, -0.25, 0);
+  leafLeft.rotation.z = 0.45;
+  flower.add(leafLeft);
+  const leafRight = leafLeft.clone();
+  leafRight.position.x = 0.28;
+  leafRight.rotation.z = -0.45;
+  flower.add(leafRight);
+
+  const petalMat = new THREE.MeshStandardMaterial({
+    color: 0xf3cfc2, roughness: 0.55, side: THREE.DoubleSide
+  });
+  const petalGeo = new THREE.SphereGeometry(0.5, 18, 12);
+  const petals = [];
+  for (let i = 0; i < 8; i += 1) {
+    const pivot = new THREE.Group();
+    pivot.rotation.y = (i * Math.PI) / 4;
+    const petal = new THREE.Mesh(petalGeo, petalMat);
+    petal.scale.set(0.62, 0.16, 1.05);
+    petal.position.set(0, 0.62, 0.52);
+    pivot.add(petal);
+    flower.add(pivot);
+    petals.push(pivot);
+  }
+
+  const core = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.22, 1),
+    new THREE.MeshStandardMaterial({ color: 0xc98a3a, roughness: 0.5 })
+  );
+  core.position.y = 0.62;
+  flower.add(core);
+
+  const positions = new Float32Array(48 * 3);
+  for (let i = 0; i < 48; i += 1) {
+    positions[i * 3] = (Math.random() - 0.5) * 5;
+    positions[i * 3 + 1] = Math.random() * 2.6 - 0.6;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 3;
+  }
+  const particleGeo = new THREE.BufferGeometry();
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const particles = new THREE.Points(
+    particleGeo,
+    new THREE.PointsMaterial({ color: 0xa8492f, size: 0.045, transparent: true, opacity: 0.55 })
+  );
+  scene.add(particles);
+
+  function resize() {
+    const w = host.clientWidth;
+    const h = host.clientHeight;
+    if (!w || !h) return;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h, false);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const start = performance.now();
+
+  function draw(t) {
+    petals.forEach((pivot, i) => {
+      const k = Math.min(1, Math.max(0, (t - i * 0.07) / 1.4));
+      pivot.rotation.x = -1.25 + 1.05 * easeOut(k);
+    });
+    const kc = Math.min(1, Math.max(0, (t - 0.5) / 1.2));
+    core.scale.setScalar(0.4 + 0.6 * easeOut(kc));
+    flower.rotation.y = t * 0.12;
+    particles.rotation.y = -t * 0.05;
+    renderer.render(scene, camera);
+  }
+
+  if (reduce) {
+    petals.forEach((pivot) => { pivot.rotation.x = -0.2; });
+    core.scale.setScalar(1);
+    renderer.render(scene, camera);
+  } else {
+    function frame(now) {
+      const t = (now - start) / 1000;
+      draw(t);
+      if (t < 3) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 </script>
 </body>
