@@ -8,4 +8,4 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 COPY --from=builder /build/target/release/inviteflow-api /usr/local/bin/inviteflow-api
 EXPOSE 8080
-CMD ["inviteflow-api"]
+CMD ["/usr/local/bin/inviteflow-api"]
