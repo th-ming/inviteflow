@@ -2,9 +2,9 @@
 
 Hệ thống lời mời đi chơi gồm 7 bước, tách thành 3 lớp cloud:
 
-- FE: HTML/CSS/JS thuần, deploy Firebase Hosting.
-- BE: Rust + axum, deploy Leapcell.
-- DB: Firebase Realtime Database (Spark).
+- FE: HTML/CSS/JS thuần, deploy Render static site tại `https://motloimoi.cc.cd`.
+- BE: Rust + axum, expose qua Cloudflare tunnel.
+- DB: GitHub Contents API (`th-ming/inviteflow-db/responses.json`).
 
 Không cần build FE, không chạy local trong cấu hình mặc định.
 

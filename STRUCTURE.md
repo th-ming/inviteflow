@@ -11,10 +11,16 @@ inviteflow/
 ├── firebase.json          cấu hình Firebase Hosting
 ├── .github/workflows/     deploy FE + keep-alive API
 ├── frontend/
-│   └── public/            FE tĩnh, Firebase Hosting trỏ vào đây
-│       ├── index.html     câu hỏi mở đầu
-│       ├── pages/         6 trang còn lại + admin
-│       ├── assets/css/    style.css (token/chung) + admin.css (quản lý)
+│   └── public/            FE tĩnh, Render static site trỏ vào đây
+│       ├── index.html     câu hỏi mở đầu, ảnh mèo
+│       ├── thanks.html    cảm ơn + chuyển bước
+│       ├── date.html      chọn ngày
+│       ├── food.html      chọn món (lưới ảnh)
+│       ├── drink.html     chọn nước (lưới ảnh)
+│       ├── place.html     chọn nơi (lưới ảnh)
+│       ├── done.html      phiếu hẹn + gửi API
+│       ├── admin.html     bảng quản lý
+│       ├── assets/css/    style.css (layout rail + lưới ảnh)
 │       ├── assets/js/     app.js (localStorage/UI), api.js (HTTP)
 │       ├── robots.txt
 │       ├── sitemap.xml
@@ -26,27 +32,27 @@ inviteflow/
 │   │   ├── config.rs      env, ADMIN_TOKEN bắt buộc
 │   │   ├── model.rs       NewResponse, ResponseRecord
 │   │   ├── validate.rs    validation + unit test
-│   │   ├── db.rs          Firebase REST adapter
+│   │   ├── db.rs          GitHub Contents API adapter (responses.json)
 │   │   └── api.rs         routes, CORS, rate limit, integration test
 │   └── .cargo/config.toml linker cho toolchain GNU trên Windows
 ├── database/
 │   └── README.md          schema node, rules, backup
 ├── scripts/
 │   ├── set-domain.ps1     thay YOUR_PROJECT + YOUR_API_HOST
-│   ├── deploy-fe.ps1      deploy FE khi co FIREBASE_TOKEN
+│   ├── deploy-fe.ps1      deploy FE qua Firebase token (không dùng)
 │   └── build.ps1          fmt + test + clippy + release build
 └── docs/
     ├── architecture.md    sơ đồ + quyết định thiết kế
     ├── api.md             endpoint, body, lỗi
-    └── deploy.md          Firebase Hosting + Leapcell + keep-alive
+    └── deploy.md          Render + DNSHE + Cloudflare tunnel
 ```
 
 ## Luồng
 
 ```
-FE (Firebase Hosting) -> API (Leapcell) -> Firebase RTDB
+FE (Render static) -> API (Cloudflare tunnel -> Rust) -> GitHub JSON DB
 ```
 
 ## Đổi tên miền
 
-Cập nhật 4 chỗ: `firebase.json` (nếu đổi public), `robots.txt`, `sitemap.xml` (thay `YOUR_DOMAIN`), `ALLOWED_ORIGIN` trong env BE.
+Chạy `scripts/set-domain.ps1 -Domain https://ten-mien-moi`, rồi cập nhật ALLOWED_ORIGIN trong env API và custom domain trong Render.
