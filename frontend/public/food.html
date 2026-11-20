@@ -34,7 +34,7 @@
   </div>
 </div>
 <script type="module">
-  import { renderChoices, reveal, setStatus, go } from './assets/js/app.js';
+  import { renderChoices, reveal, setStatus, go, toast } from './assets/js/app.js';
   const special = 'Ăn Gì Cũng Được';
   renderChoices([
     { name: 'Cơm', image: 'https://i.pinimg.com/736x/ac/f2/14/acf21487e6638097f8e8922b153c1ffa.jpg' },
@@ -46,8 +46,9 @@
     { name: special, image: 'https://i.pinimg.com/736x/15/c5/36/15c536783014eb6fa4bbc953021b3eb6.jpg' }
   ], 'choices', 'food', (label) => {
     setStatus('status', label === special
-      ? 'Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè'
+      ? 'Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè 🤣'
       : `Một ${label} sẽ được phục vụ`);
+    toast(label === special ? 'Ăn anh nè' : `Một ${label} sẽ được phục vụ`);
     reveal('nextWrap');
   });
   document.getElementById('next').addEventListener('click', () => go('drink.html'));

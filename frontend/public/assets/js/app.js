@@ -33,6 +33,30 @@ export function reveal(id) {
   if (node) node.hidden = false;
 }
 
+export function toast(message) {
+  const node = document.createElement('div');
+  node.className = 'toast';
+  node.textContent = message;
+  document.body.appendChild(node);
+  setTimeout(() => node.remove(), 2400);
+}
+
+export function hearts(count = 15) {
+  const field = document.createElement('div');
+  field.className = 'heart-field';
+  document.body.appendChild(field);
+  for (let i = 0; i < count; i += 1) {
+    const heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.style.left = `${Math.random() * 100}%`;
+    heart.style.top = `${60 + Math.random() * 35}%`;
+    heart.style.animationDelay = `${Math.random() * 400}ms`;
+    heart.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-9-5.7-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.3-9 11-9 11z"/></svg>';
+    field.appendChild(heart);
+  }
+  setTimeout(() => field.remove(), 2600);
+}
+
 export function renderChoices(items, containerId, key, onPick) {
   const container = byId(containerId);
   if (!container) return;

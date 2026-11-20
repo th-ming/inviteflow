@@ -35,7 +35,7 @@
   </div>
 </div>
 <script type="module">
-  import { go, setStatus } from './assets/js/app.js';
+  import { go, setStatus, toast, hearts } from './assets/js/app.js';
   const words = ['Bấm đi mà', 'Click đi', 'Thử đi', 'Đừng ngại', 'Bấm mạnh vào'];
   const button = document.getElementById('next');
   let busy = false;
@@ -52,6 +52,8 @@
       button.textContent = 'Tiếp';
       busy = false;
       setStatus('status', 'Cảm ơn bạn đã bấm nút');
+      toast('Cảm ơn bạn đã bấm nút');
+      hearts();
       go('date.html');
     }, 900);
   });

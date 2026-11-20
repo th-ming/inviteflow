@@ -34,7 +34,7 @@
   </div>
 </div>
 <script type="module">
-  import { renderChoices, reveal, setStatus, go } from './assets/js/app.js';
+  import { renderChoices, reveal, setStatus, go, toast } from './assets/js/app.js';
   const special = 'Uống Gì Cũng Được';
   renderChoices([
     { name: 'Trà Sữa', image: 'https://i.pinimg.com/736x/87/2a/09/872a0953896df1c6e757fd54b845da23.jpg' },
@@ -45,7 +45,8 @@
     { name: 'Trà Chanh', image: 'https://i.pinimg.com/736x/c6/4d/26/c64d26e91c7c1a09916bcc3223da561b.jpg' },
     { name: special, image: 'https://i.pinimg.com/736x/6f/36/c8/6f36c874861a46b8e4208454157a1d6b.jpg' }
   ], 'choices', 'drink', (label) => {
-    setStatus('status', label === special ? 'Cho em chọn nhé' : `Một ly ${label} tuyệt vời sắp được phục vụ`);
+    setStatus('status', label === special ? 'Cho em chọn nhé :33' : `Một ly ${label} tuyệt vời sắp được phục vụ`);
+    toast(label === special ? 'Cho em chọn nha' : `Một ly ${label} tuyệt vời sắp được phục vụ!`);
     reveal('nextWrap');
   });
   document.getElementById('next').addEventListener('click', () => go('place.html'));

@@ -40,7 +40,7 @@
   </div>
 </div>
 <script type="module">
-  import { save, go, formatDay, reveal, setStatus } from './assets/js/app.js';
+  import { save, go, formatDay, reveal, setStatus, toast } from './assets/js/app.js';
   const input = document.getElementById('datepicker');
   document.getElementById('pick').addEventListener('click', () => {
     if (!input.value) {
@@ -50,6 +50,7 @@
     }
     save('freeDay', input.value);
     setStatus('status', `Bạn chọn ngày: ${formatDay(input.value)}`);
+    setTimeout(() => toast('Một buổi hẹn tuyệt vời sẽ đến!'), 500);
     reveal('nextWrap');
   });
   document.getElementById('cancel').addEventListener('click', () => {

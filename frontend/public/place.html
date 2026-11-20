@@ -34,7 +34,7 @@
   </div>
 </div>
 <script type="module">
-  import { renderChoices, reveal, setStatus, go } from './assets/js/app.js';
+  import { renderChoices, reveal, setStatus, go, toast } from './assets/js/app.js';
   const special = 'Nơi Có Chúng Ta';
   renderChoices([
     { name: 'Công Viên', image: 'https://i.pinimg.com/736x/c9/64/58/c9645891fc4c84d400a93c00c8dc42a2.jpg' },
@@ -45,8 +45,11 @@
     { name: special, image: 'https://i.pinimg.com/736x/b6/08/3c/b6083cc8a66ab145ec71efce64ad96b2.jpg' }
   ], 'choices', 'place', (label) => {
     setStatus('status', label === special
-      ? 'Đi đâu miễn đi cùng em là được'
+      ? 'Đi đâu miễn đi cùng em là được 🥰'
       : `Một buổi đi chơi ${label} thật tuyệt vời nhé`);
+    toast(label === special
+      ? 'Đi Đâu Miễn Đi Cùng Em Là Được 🥰'
+      : `Một buổi đi chơi ${label} thật tuyệt vời nhé!`);
     reveal('nextWrap');
   });
   document.getElementById('next').addEventListener('click', () => go('done.html'));

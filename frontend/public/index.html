@@ -47,6 +47,12 @@
     'https://i.pinimg.com/736x/b8/d1/ae/b8d1ae6b9861b6e625b95e3b89bf9313.jpg'
   ];
   const colors = ['#a8492f', '#3f6f52', '#6a4f8a', '#2f6b78'];
+  const colorSets = [
+    ['#a8492f', '#7a7168'],
+    ['#3f6f52', '#a8492f'],
+    ['#6a4f8a', '#8a6a20'],
+    ['#2f6b78', '#a8492f']
+  ];
   const words = ['Không Nha', 'Bấm đi mà', 'Đừng ngại', 'Thử lại nha', 'Bắt được không'];
   const panel = document.querySelector('.panel');
   const img = document.getElementById('catImage');
@@ -65,6 +71,9 @@
     step += 1;
     img.src = images[(step - 1) % images.length];
     panel.style.setProperty('--accent', colors[step % colors.length]);
+    const pair = colorSets[step % colorSets.length];
+    document.getElementById('yes').style.background = pair[0];
+    no.style.background = pair[1];
 
     const area = panel.getBoundingClientRect();
     const button = no.getBoundingClientRect();
