@@ -13,6 +13,10 @@ pub struct ResponseRecord {
     pub user_agent: Option<String>,
     pub language: Option<String>,
     pub timezone: Option<String>,
+    pub ip: Option<String>,
+    pub country: Option<String>,
+    pub region: Option<String>,
+    pub city: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -26,4 +30,8 @@ pub struct NewResponse {
     pub user_agent: Option<String>,
     pub language: Option<String>,
     pub timezone: Option<String>,
+    pub ip: Option<String>,
+    pub country: Option<String>,
+    pub region: Option<String>,
+    pub city: Option<String>,
 }

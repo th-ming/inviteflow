@@ -22,6 +22,10 @@ pub fn validate(input: NewResponse) -> Result<ResponseRecord, String> {
         user_agent: meta(input.user_agent, 240, "userAgent")?,
         language: meta(input.language, 40, "language")?,
         timezone: meta(input.timezone, 80, "timezone")?,
+        ip: None,
+        country: None,
+        region: None,
+        city: None,
     })
 }
 

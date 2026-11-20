@@ -10,7 +10,7 @@
 </head>
 <body>
 <div class="app">
-  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Quản lý</span></header>
+  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta" id="roleMeta">Quản lý</span></header>
 
   <section class="panel" id="login" style="max-width:480px;margin:48px auto">
     <p class="eyebrow">Riêng tư</p>
@@ -49,6 +49,11 @@
           <div class="stat"><span class="stat-label">Hôm nay</span><strong class="stat-value" id="statToday">0</strong></div>
         </div>
 
+        <section class="chart-block" aria-label="Lượt trả lời theo ngày">
+          <div class="chart-head"><span class="stat-label">Lượt theo ngày</span><span class="meta" id="chartRange"></span></div>
+          <div class="chart" id="chart"></div>
+        </section>
+
         <div class="filters">
           <input class="field grow" type="search" id="search" placeholder="Tìm món, nước, nơi, người…" aria-label="Tìm kiếm">
           <select class="field" id="consentFilter" aria-label="Lọc câu trả lời">
@@ -61,7 +66,7 @@
 
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Thời gian</th><th>Kết quả</th><th>Ngày hẹn</th><th>Món</th><th>Nước</th><th>Nơi</th><th>Nguồn</th><th></th></tr></thead>
+            <thead><tr><th>Thời gian</th><th>Kết quả</th><th>Ngày hẹn</th><th>Món</th><th>Nước</th><th>Nơi</th><th>Vị trí</th><th></th></tr></thead>
             <tbody id="rows"></tbody>
           </table>
         </div>
@@ -90,6 +95,7 @@
   const tokenInput = byId('token');
   let all = [];
   let filtered = [];
+  let role = 'viewer';
 
   function showLogin(message) {
     shell.hidden = true;
@@ -103,6 +109,39 @@
   function escapeCsv(value) {
     const text = String(value ?? '');
     return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }
+
+  function locationOf(item) {
+    return [item.city, item.region, item.country].filter(Boolean).join(', ') || '—';
+  }
+
+  function chart() {
+    const counts = new Map();
+    filtered.forEach((item) => {
+      const day = String(item.created_at || '').slice(0, 10);
+      if (day) counts.set(day, (counts.get(day) || 0) + 1);
+    });
+    const days = [...counts.keys()].sort().slice(-14);
+    const host = byId('chart');
+    host.textContent = '';
+    byId('chartRange').textContent = days.length ? `${days[0]} → ${days[days.length - 1]}` : 'Không có dữ liệu';
+    const max = Math.max(1, ...days.map((day) => counts.get(day)));
+    days.forEach((day) => {
+      const count = counts.get(day);
+      const column = document.createElement('div');
+      column.className = 'chart-day';
+      const value = document.createElement('span');
+      value.className = 'chart-count';
+      value.textContent = count;
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.height = `${Math.max(2, Math.round((count / max) * 64))}px`;
+      const label = document.createElement('span');
+      label.className = 'chart-label';
+      label.textContent = day.slice(5);
+      column.append(value, bar, label);
+      host.appendChild(column);
+    });
   }
 
   function stats() {
@@ -121,9 +160,11 @@
       if (consent && item.consent !== consent) return false;
       if (from && String(item.created_at).slice(0, 10) < from) return false;
       if (!term) return true;
-      return [item.food, item.drink, item.place, item.free_day, item.visitor_id, item.timezone]
+      return [item.food, item.drink, item.place, item.free_day, item.visitor_id,
+        item.timezone, item.ip, item.country, item.region, item.city]
         .some((value) => String(value || '').toLowerCase().includes(term));
     });
+    chart();
     render();
   }
 
@@ -144,7 +185,7 @@
       const values = [
         time(item.created_at), item.consent, item.free_day || '—',
         item.food || '—', item.drink || '—', item.place || '—',
-        item.timezone || '—'
+        locationOf(item)
       ];
       values.forEach((value) => {
         const td = document.createElement('td');
@@ -168,7 +209,11 @@
           await load();
         } catch (error) { byId('status').textContent = error.message; }
       });
-      action.append(view, document.createTextNode(' '), del);
+      if (role === 'admin' || role === 'editor') {
+        action.append(view, document.createTextNode(' '), del);
+      } else {
+        action.appendChild(view);
+      }
       tr.appendChild(action);
       rows.appendChild(tr);
     });
@@ -182,7 +227,9 @@
       ['Mã lượt', item.id], ['Câu trả lời', item.consent], ['Ngày hẹn', item.free_day],
       ['Món', item.food], ['Nước', item.drink], ['Nơi', item.place],
       ['Mã người', item.visitor_id], ['Ngôn ngữ', item.language],
-      ['Múi giờ', item.timezone], ['Thiết bị', item.user_agent]
+      ['Múi giờ', item.timezone], ['IP', item.ip],
+      ['Quốc gia', item.country], ['Khu vực', item.region], ['Thành phố', item.city],
+      ['Thiết bị', item.user_agent]
     ];
     fields.forEach(([label, value]) => {
       const row = document.createElement('div');
@@ -199,7 +246,7 @@
   }
 
   function exportCsv() {
-    const header = ['id', 'created_at', 'consent', 'free_day', 'food', 'drink', 'place', 'visitor_id', 'language', 'timezone', 'user_agent'];
+    const header = ['id', 'created_at', 'consent', 'free_day', 'food', 'drink', 'place', 'visitor_id', 'language', 'timezone', 'ip', 'country', 'region', 'city', 'user_agent'];
     const lines = [header.join(',')];
     filtered.forEach((item) => lines.push(header.map((key) => escapeCsv(item[key])).join(',')));
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -215,6 +262,10 @@
     login.hidden = true;
     shell.hidden = false;
     try {
+      const profile = await adminRequest('/api/me');
+      role = profile.role;
+      byId('roleMeta').textContent = `Quản lý · ${profile.label}`;
+      byId('clear').hidden = role !== 'admin';
       all = await adminRequest('/api/responses');
       stats();
       applyFilters();

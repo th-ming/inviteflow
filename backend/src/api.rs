@@ -21,6 +21,7 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub db: Db,
     pub limiter: Arc<Mutex<HashMap<String, (u64, Instant)>>>,
+    pub http: reqwest::Client,
 }
 
 impl AppState {
@@ -29,6 +30,7 @@ impl AppState {
             config,
             db,
             limiter: Arc::new(Mutex::new(HashMap::new())),
+            http: reqwest::Client::new(),
         }
     }
 }
@@ -53,12 +55,67 @@ fn equals(a: &str, b: &str) -> bool {
     diff == 0
 }
 
-fn authorized(state: &AppState, headers: &HeaderMap) -> bool {
-    headers
+fn authorized(state: &AppState, headers: &HeaderMap) -> Option<(String, String)> {
+    let provided = headers
         .get(AUTHORIZATION)
         .and_then(|value| value.to_str().ok())
-        .and_then(|value| value.strip_prefix("Bearer "))
-        .is_some_and(|token| equals(token.trim(), &state.config.admin_token))
+        .and_then(|value| value.strip_prefix("Bearer "))?
+        .trim();
+
+    state
+        .config
+        .admin_users
+        .iter()
+        .find(|user| equals(provided, &user.token))
+        .map(|user| (user.role.clone(), user.label.clone()))
+}
+
+fn client_ip(headers: &HeaderMap, addr: SocketAddr) -> String {
+    let forwarded: Option<&str> = headers
+        .get("cf-connecting-ip")
+        .and_then(|value| value.to_str().ok())
+        .or_else(|| {
+            headers
+                .get("x-forwarded-for")
+                .and_then(|value| value.to_str().ok())
+        })
+        .and_then(|value| value.split(',').next())
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
+    forwarded
+        .map(str::to_string)
+        .unwrap_or_else(|| addr.ip().to_string())
+}
+
+async fn locate(
+    client: &reqwest::Client,
+    ip: &str,
+) -> (Option<String>, Option<String>, Option<String>) {
+    if ip.is_empty() || ip == "127.0.0.1" || ip.starts_with("10.") || ip.starts_with("192.168.") {
+        return (None, None, None);
+    }
+    let url = format!("https://ipwho.is/{ip}");
+    let response = match client
+        .get(url)
+        .timeout(std::time::Duration::from_secs(3))
+        .send()
+        .await
+    {
+        Ok(response) => response,
+        Err(_) => return (None, None, None),
+    };
+    let body: Value = match response.json().await {
+        Ok(body) => body,
+        Err(_) => return (None, None, None),
+    };
+    let pick = |key: &str| {
+        body[key]
+            .as_str()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_string)
+    };
+    (pick("country"), pick("region"), pick("city"))
 }
 
 async fn rate_check(state: &AppState, ip: String) -> Result<(), ApiError> {
@@ -85,14 +142,21 @@ async fn health() -> Json<Value> {
 async fn create(
     State(state): State<AppState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     body: Result<Json<NewResponse>, axum::extract::rejection::JsonRejection>,
 ) -> Result<(StatusCode, Json<Value>), ApiError> {
     let input = body
         .map_err(|e| ApiError(StatusCode::BAD_REQUEST, e.to_string()))?
         .0;
-    rate_check(&state, addr.ip().to_string()).await?;
+    let ip = client_ip(&headers, addr);
+    rate_check(&state, ip.clone()).await?;
 
-    let record = validate(input).map_err(|e| ApiError(StatusCode::BAD_REQUEST, e))?;
+    let mut record = validate(input).map_err(|e| ApiError(StatusCode::BAD_REQUEST, e))?;
+    record.ip = Some(ip.clone());
+    let (country, region, city) = locate(&state.http, &ip).await;
+    record.country = country;
+    record.region = region;
+    record.city = city;
     state
         .db
         .insert(record.clone())
@@ -102,10 +166,15 @@ async fn create(
     Ok((StatusCode::CREATED, Json(json!({ "id": record.id }))))
 }
 
+async fn me(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
+    let (role, label) = authorized(&state, &headers)
+        .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
+    Ok(Json(json!({ "role": role, "label": label })))
+}
+
 async fn list(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
-    if !authorized(&state, &headers) {
-        return Err(ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()));
-    }
+    authorized(&state, &headers)
+        .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
     let records = state
         .db
         .list()
@@ -119,8 +188,10 @@ async fn remove_one(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Result<Json<Value>, ApiError> {
-    if !authorized(&state, &headers) {
-        return Err(ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()));
+    let (role, _) = authorized(&state, &headers)
+        .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
+    if role != "admin" && role != "editor" {
+        return Err(ApiError(StatusCode::FORBIDDEN, "Không có quyền xóa".into()));
     }
     let removed = state
         .db
@@ -131,8 +202,13 @@ async fn remove_one(
 }
 
 async fn clear(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
-    if !authorized(&state, &headers) {
-        return Err(ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()));
+    let (role, _) = authorized(&state, &headers)
+        .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
+    if role != "admin" {
+        return Err(ApiError(
+            StatusCode::FORBIDDEN,
+            "Chỉ quản trị viên được xóa toàn bộ".into(),
+        ));
     }
     state
         .db
@@ -152,6 +228,7 @@ pub fn router(state: AppState) -> Router {
 
     Router::new()
         .route("/api/health", get(health))
+        .route("/api/me", get(me))
         .route("/health", get(health))
         .route("/kaithhealth", get(health))
         .route("/api/responses", post(create).get(list).delete(clear))
@@ -164,6 +241,7 @@ pub fn router(state: AppState) -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::AdminUser;
     use crate::db::FileDb;
     use tower::ServiceExt;
 
@@ -172,6 +250,11 @@ mod tests {
             host: "127.0.0.1".into(),
             port: 0,
             admin_token: "test-token".into(),
+            admin_users: vec![AdminUser {
+                token: "test-token".into(),
+                role: "admin".into(),
+                label: "Chủ".into(),
+            }],
             db_driver: "file".into(),
             database_url: "https://example.firebaseio.com".into(),
             database_path: "responses".into(),

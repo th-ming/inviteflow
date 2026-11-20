@@ -1,10 +1,18 @@
 use std::{env, path::PathBuf};
 
 #[derive(Clone, Debug)]
+pub struct AdminUser {
+    pub token: String,
+    pub role: String,
+    pub label: String,
+}
+
+#[derive(Clone, Debug)]
 pub struct Config {
     pub host: String,
     pub port: u16,
     pub admin_token: String,
+    pub admin_users: Vec<AdminUser>,
     pub db_driver: String,
     pub database_url: String,
     pub database_path: String,
@@ -24,6 +32,8 @@ impl Config {
 
         let admin_token =
             env::var("ADMIN_TOKEN").map_err(|_| "ADMIN_TOKEN là bắt buộc".to_string())?;
+        let admin_users =
+            parse_admin_users(&env::var("ADMIN_USERS").unwrap_or_default(), &admin_token);
         let port = env::var("PORT")
             .ok()
             .and_then(|v| v.parse().ok())
@@ -41,6 +51,7 @@ impl Config {
             host: env::var("HOST").unwrap_or_else(|_| "0.0.0.0".into()),
             port,
             admin_token,
+            admin_users,
             db_driver: env::var("DB_DRIVER").unwrap_or_else(|_| "github".into()),
             database_url: env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "https://example.firebaseio.com".into())
@@ -75,4 +86,31 @@ impl Config {
 
         Ok(config)
     }
+}
+
+fn parse_admin_users(raw: &str, fallback_token: &str) -> Vec<AdminUser> {
+    let mut users: Vec<AdminUser> = raw
+        .split(',')
+        .filter_map(|part| {
+            let mut pieces = part.trim().splitn(3, ':');
+            let token = pieces.next()?.trim();
+            if token.is_empty() {
+                return None;
+            }
+            Some(AdminUser {
+                token: token.to_string(),
+                role: pieces.next().unwrap_or("viewer").trim().to_string(),
+                label: pieces.next().unwrap_or("Người xem").trim().to_string(),
+            })
+        })
+        .collect();
+
+    if users.is_empty() {
+        users.push(AdminUser {
+            token: fallback_token.to_string(),
+            role: "admin".into(),
+            label: "Chủ".into(),
+        });
+    }
+    users
 }

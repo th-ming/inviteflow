@@ -196,7 +196,7 @@ h1 {
 .progress span.on { background: var(--accent); }
 
 .table-wrap { overflow-x: auto; margin-top: 24px; }
-.table-wrap table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.table-wrap table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .table-wrap th, .table-wrap td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
 .table-wrap th { color: var(--muted); font-weight: 400; }
 .table-wrap tbody tr:hover { background: var(--paper); }
@@ -206,6 +206,14 @@ h1 {
 .stat-label { color: var(--muted); font-size: 13px; }
 .stat-value { display: block; margin-top: 4px; font-size: 28px; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .stat-accent .stat-value { color: var(--accent-ink); }
+
+.chart-block { margin-top: 24px; padding: 16px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.chart-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.chart { display: flex; align-items: flex-end; gap: 8px; min-height: 96px; border-bottom: 1px solid var(--line); }
+.chart-day { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.chart-bar { width: 100%; max-width: 32px; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; }
+.chart-label { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.chart-count { font-size: 12px; font-variant-numeric: tabular-nums; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .filters .field { width: auto; min-width: 160px; min-height: 44px; }
