@@ -170,8 +170,12 @@
     byId('shell').hidden = true;
     byId('drawer').hidden = true;
     byId('login').hidden = false;
+    const input = byId('password');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
     byId('loginStatus').textContent = message || '';
-    byId('password').focus();
   }
 
   function locationOf(item) {
@@ -438,6 +442,8 @@
     try {
       await login(password, byId('remember').checked);
       await load();
+      byId('login').hidden = true;
+      byId('shell').hidden = false;
     } catch (error) { byId('loginStatus').textContent = error.message; }
   });
   byId('password').addEventListener('keydown', (event) => {
