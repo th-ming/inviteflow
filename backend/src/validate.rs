@@ -18,6 +18,10 @@ pub fn validate(input: NewResponse) -> Result<ResponseRecord, String> {
         drink: text(input.drink, "drink")?,
         place: text(input.place, "place")?,
         created_at: Utc::now().to_rfc3339(),
+        visitor_id: meta(input.visitor_id, 80, "visitorId")?,
+        user_agent: meta(input.user_agent, 240, "userAgent")?,
+        language: meta(input.language, 40, "language")?,
+        timezone: meta(input.timezone, 80, "timezone")?,
     })
 }
 
@@ -45,6 +49,19 @@ fn date(value: Option<String>) -> Result<Option<String>, String> {
     Ok(Some(value.to_string()))
 }
 
+fn meta(value: Option<String>, max: usize, field: &str) -> Result<Option<String>, String> {
+    let Some(raw) = value else { return Ok(None) };
+    let value = raw.trim();
+    if value.len() > max {
+        return Err(format!("{field} quá dài"));
+    }
+    Ok(if value.is_empty() {
+        None
+    } else {
+        Some(value.to_string())
+    })
+}
+
 fn text(value: Option<String>, field: &str) -> Result<Option<String>, String> {
     let Some(raw) = value else { return Ok(None) };
     let value = raw.trim();
@@ -69,6 +86,10 @@ mod tests {
             food: None,
             drink: None,
             place: None,
+            visitor_id: None,
+            user_agent: None,
+            language: None,
+            timezone: None,
         }
     }
 

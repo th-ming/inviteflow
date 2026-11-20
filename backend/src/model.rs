@@ -9,6 +9,10 @@ pub struct ResponseRecord {
     pub drink: Option<String>,
     pub place: Option<String>,
     pub created_at: String,
+    pub visitor_id: Option<String>,
+    pub user_agent: Option<String>,
+    pub language: Option<String>,
+    pub timezone: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -18,4 +22,8 @@ pub struct NewResponse {
     pub food: Option<String>,
     pub drink: Option<String>,
     pub place: Option<String>,
+    pub visitor_id: Option<String>,
+    pub user_agent: Option<String>,
+    pub language: Option<String>,
+    pub timezone: Option<String>,
 }

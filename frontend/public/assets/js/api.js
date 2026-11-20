@@ -1,10 +1,25 @@
 const base = () => String(window.API_BASE || '').replace(/\/$/, '');
 
+function visitorId() {
+  let id = localStorage.getItem('inviteflow-visitor-id');
+  if (!id) {
+    id = crypto.randomUUID ? crypto.randomUUID() : `v-${Date.now()}-${Math.random()}`;
+    localStorage.setItem('inviteflow-visitor-id', id);
+  }
+  return id;
+}
+
 export async function postResponse(payload) {
+  const meta = {
+    visitor_id: visitorId(),
+    user_agent: navigator.userAgent || '',
+    language: navigator.language || '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+  };
   const response = await fetch(`${base()}/api/responses`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, ...meta }),
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

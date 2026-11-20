@@ -24,58 +24,140 @@
 
   <main class="layout" id="shell" hidden>
     <nav class="rail" aria-label="Quản lý">
-      <div class="step active"><span class="num">01</span>Lượt trả lời</div>
+      <div class="step active"><span class="num">01</span>Tổng quan</div>
+      <div class="step"><span class="num">02</span>Lượt trả lời</div>
     </nav>
-    <section class="stage panel">
-      <p class="eyebrow">Riêng tư</p>
-      <h1>Lượt trả lời</h1>
-      <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <div class="actions" style="justify-content:space-between">
-        <span class="meta" id="sessionText">Đã kết nối</span>
-        <button type="button" class="btn" id="clear">Xóa toàn bộ</button>
+
+    <section class="stage">
+      <div class="panel">
+        <p class="eyebrow">Riêng tư</p>
+        <h1>Lượt trả lời</h1>
+        <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <div class="actions" style="justify-content:space-between">
+          <span class="meta" id="sessionText">Đã kết nối</span>
+          <div class="actions" style="margin-top:0">
+            <button type="button" class="btn" id="refresh">Làm mới</button>
+            <button type="button" class="btn" id="export">Xuất CSV</button>
+            <button type="button" class="btn" id="clear">Xóa toàn bộ</button>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat"><span class="stat-label">Tổng lượt</span><strong class="stat-value" id="statTotal">0</strong></div>
+          <div class="stat stat-accent"><span class="stat-label">Đồng ý</span><strong class="stat-value" id="statYes">0</strong></div>
+          <div class="stat"><span class="stat-label">Từ chối</span><strong class="stat-value" id="statNo">0</strong></div>
+          <div class="stat"><span class="stat-label">Hôm nay</span><strong class="stat-value" id="statToday">0</strong></div>
+        </div>
+
+        <div class="filters">
+          <input class="field grow" type="search" id="search" placeholder="Tìm món, nước, nơi, người…" aria-label="Tìm kiếm">
+          <select class="field" id="consentFilter" aria-label="Lọc câu trả lời">
+            <option value="">Tất cả câu trả lời</option>
+            <option value="Vâng">Đồng ý</option>
+            <option value="Không Nha">Từ chối</option>
+          </select>
+          <input class="field" type="date" id="dateFilter" aria-label="Lọc từ ngày">
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Thời gian</th><th>Kết quả</th><th>Ngày hẹn</th><th>Món</th><th>Nước</th><th>Nơi</th><th>Nguồn</th><th></th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p class="status" id="empty" hidden>Chưa có lượt trả lời nào</p>
+        <p class="status" id="status" role="status"></p>
       </div>
-      <div class="table-wrap" style="margin-top:24px">
-        <table>
-          <thead><tr><th>Thời gian</th><th>Câu trả lời</th><th>Ngày</th><th>Món</th><th>Nước</th><th>Nơi</th><th></th></tr></thead>
-          <tbody id="rows"></tbody>
-        </table>
-      </div>
-      <p class="status" id="empty" hidden>Chưa có lượt trả lời nào</p>
-      <p class="status" id="status" role="status"></p>
     </section>
   </main>
 </div>
+
+<aside class="drawer" id="drawer" hidden aria-label="Chi tiết lượt trả lời">
+  <button type="button" class="btn drawer-close" id="drawerClose">Đóng</button>
+  <p class="eyebrow">Chi tiết</p>
+  <h2 id="drawerTitle">Lượt trả lời</h2>
+  <div id="drawerRows"></div>
+  <pre id="drawerRaw"></pre>
+</aside>
+
 <script type="module">
   import { adminRequest } from './assets/js/api.js';
   import { byId } from './assets/js/app.js';
 
   const login = byId('login');
   const shell = byId('shell');
+  const drawer = byId('drawer');
   const tokenInput = byId('token');
+  let all = [];
+  let filtered = [];
 
   function showLogin(message) {
     shell.hidden = true;
+    drawer.hidden = true;
     login.hidden = false;
     tokenInput.value = '';
     byId('loginStatus').textContent = message || '';
     tokenInput.focus();
   }
 
-  function render(data) {
+  function escapeCsv(value) {
+    const text = String(value ?? '');
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }
+
+  function stats() {
+    const today = new Date().toISOString().slice(0, 10);
+    byId('statTotal').textContent = all.length;
+    byId('statYes').textContent = all.filter((item) => item.consent === 'Vâng').length;
+    byId('statNo').textContent = all.filter((item) => item.consent === 'Không Nha').length;
+    byId('statToday').textContent = all.filter((item) => String(item.created_at).startsWith(today)).length;
+  }
+
+  function applyFilters() {
+    const term = byId('search').value.trim().toLowerCase();
+    const consent = byId('consentFilter').value;
+    const from = byId('dateFilter').value;
+    filtered = all.filter((item) => {
+      if (consent && item.consent !== consent) return false;
+      if (from && String(item.created_at).slice(0, 10) < from) return false;
+      if (!term) return true;
+      return [item.food, item.drink, item.place, item.free_day, item.visitor_id, item.timezone]
+        .some((value) => String(value || '').toLowerCase().includes(term));
+    });
+    render();
+  }
+
+  function time(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString('vi-VN');
+  }
+
+  function render() {
     const rows = byId('rows');
     rows.textContent = '';
-    byId('sessionText').textContent = `Đã kết nối · ${data.length} lượt`;
-    byId('empty').hidden = data.length > 0;
+    byId('empty').hidden = filtered.length > 0;
+    byId('sessionText').textContent = `Đã kết nối · ${filtered.length} / ${all.length} lượt`;
     byId('status').textContent = '';
 
-    data.forEach((item) => {
+    filtered.forEach((item) => {
       const tr = document.createElement('tr');
-      ['created_at', 'consent', 'free_day', 'food', 'drink', 'place'].forEach((field) => {
+      const values = [
+        time(item.created_at), item.consent, item.free_day || '—',
+        item.food || '—', item.drink || '—', item.place || '—',
+        item.timezone || '—'
+      ];
+      values.forEach((value) => {
         const td = document.createElement('td');
-        td.textContent = item[field] || '';
+        td.textContent = value;
         tr.appendChild(td);
       });
+
       const action = document.createElement('td');
+      const view = document.createElement('button');
+      view.type = 'button';
+      view.className = 'btn';
+      view.textContent = 'Xem';
+      view.addEventListener('click', () => openDetail(item));
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'btn';
@@ -86,18 +168,57 @@
           await load();
         } catch (error) { byId('status').textContent = error.message; }
       });
-      action.appendChild(del);
+      action.append(view, document.createTextNode(' '), del);
       tr.appendChild(action);
       rows.appendChild(tr);
     });
+  }
+
+  function openDetail(item) {
+    byId('drawerTitle').textContent = time(item.created_at);
+    const container = byId('drawerRows');
+    container.textContent = '';
+    const fields = [
+      ['Mã lượt', item.id], ['Câu trả lời', item.consent], ['Ngày hẹn', item.free_day],
+      ['Món', item.food], ['Nước', item.drink], ['Nơi', item.place],
+      ['Mã người', item.visitor_id], ['Ngôn ngữ', item.language],
+      ['Múi giờ', item.timezone], ['Thiết bị', item.user_agent]
+    ];
+    fields.forEach(([label, value]) => {
+      const row = document.createElement('div');
+      row.className = 'drawer-row';
+      const left = document.createElement('span');
+      left.textContent = label;
+      const right = document.createElement('span');
+      right.textContent = value || '—';
+      row.append(left, right);
+      container.appendChild(row);
+    });
+    byId('drawerRaw').textContent = JSON.stringify(item, null, 2);
+    drawer.hidden = false;
+  }
+
+  function exportCsv() {
+    const header = ['id', 'created_at', 'consent', 'free_day', 'food', 'drink', 'place', 'visitor_id', 'language', 'timezone', 'user_agent'];
+    const lines = [header.join(',')];
+    filtered.forEach((item) => lines.push(header.map((key) => escapeCsv(item[key])).join(',')));
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'inviteflow-responses.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 
   async function load() {
     if (!sessionStorage.getItem('adminToken')) { showLogin(); return; }
     login.hidden = true;
     shell.hidden = false;
-    try { render(await adminRequest('/api/responses')); }
-    catch (error) { showLogin(error.message); }
+    try {
+      all = await adminRequest('/api/responses');
+      stats();
+      applyFilters();
+    } catch (error) { showLogin(error.message); }
   }
 
   async function connect() {
@@ -109,6 +230,12 @@
 
   byId('connect').addEventListener('click', connect);
   tokenInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') connect(); });
+  byId('refresh').addEventListener('click', load);
+  byId('export').addEventListener('click', exportCsv);
+  byId('search').addEventListener('input', applyFilters);
+  byId('consentFilter').addEventListener('change', applyFilters);
+  byId('dateFilter').addEventListener('change', applyFilters);
+  byId('drawerClose').addEventListener('click', () => { drawer.hidden = true; });
   byId('clear').addEventListener('click', async () => {
     if (!confirm('Xóa toàn bộ lượt trả lời?')) return;
     try {
