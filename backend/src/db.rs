@@ -47,6 +47,28 @@ impl Db {
         }
     }
 
+    pub async fn update(&self, record: ResponseRecord) -> Result<bool, String> {
+        match self {
+            Db::File(db) => db.update(record).await,
+            Db::Firebase(db) => db.update(record).await,
+            Db::Github(db) => {
+                let (mut records, sha) = db.read().await?;
+                let mut updated = false;
+                for item in records.iter_mut() {
+                    if item.id == record.id {
+                        *item = record.clone();
+                        updated = true;
+                        break;
+                    }
+                }
+                if updated {
+                    db.write(&records, sha).await?;
+                }
+                Ok(updated)
+            }
+        }
+    }
+
     pub async fn remove(&self, id: &str) -> Result<bool, String> {
         match self {
             Db::File(db) => db.remove(id).await,
@@ -117,6 +139,23 @@ impl FileDb {
         let mut records = self.read().await?;
         records.push(record);
         self.write(&records).await
+    }
+
+    async fn update(&self, record: ResponseRecord) -> Result<bool, String> {
+        let _guard = self.lock.lock().await;
+        let mut records = self.read().await?;
+        let mut updated = false;
+        for item in records.iter_mut() {
+            if item.id == record.id {
+                *item = record;
+                updated = true;
+                break;
+            }
+        }
+        if updated {
+            self.write(&records).await?;
+        }
+        Ok(updated)
     }
 
     async fn remove(&self, id: &str) -> Result<bool, String> {
@@ -198,6 +237,21 @@ impl FirebaseDb {
         }
     }
 
+    async fn update(&self, record: ResponseRecord) -> Result<bool, String> {
+        let response = self
+            .client
+            .put(self.node(Some(&record.id)))
+            .json(&record)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+        if response.status().is_success() {
+            Ok(true)
+        } else {
+            Err(format!("Firebase trả {}", response.status()))
+        }
+    }
+
     async fn clear(&self) -> Result<(), String> {
         let response = self
             .client
@@ -231,7 +285,7 @@ impl GithubDb {
         }
     }
 
-    async fn read(&self) -> Result<(Vec<ResponseRecord>, Option<String>), String> {
+    pub async fn read_value(&self) -> Result<(serde_json::Value, Option<String>), String> {
         let response = self
             .client
             .get(&self.api)
@@ -241,7 +295,7 @@ impl GithubDb {
             .await
             .map_err(|e| e.to_string())?;
         if response.status() == reqwest::StatusCode::NOT_FOUND {
-            return Ok((Vec::new(), None));
+            return Ok((serde_json::Value::Null, None));
         }
         if !response.status().is_success() {
             return Err(format!("GitHub trả {}", response.status()));
@@ -251,10 +305,50 @@ impl GithubDb {
         let bytes = base64::engine::general_purpose::STANDARD
             .decode(encoded)
             .map_err(|e| e.to_string())?;
-        let records: Vec<ResponseRecord> =
-            serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+        let value: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
         let sha = body["sha"].as_str().map(str::to_string);
+        Ok((value, sha))
+    }
+
+    async fn read(&self) -> Result<(Vec<ResponseRecord>, Option<String>), String> {
+        let (value, sha) = self.read_value().await?;
+        if value.is_null() {
+            return Ok((Vec::new(), None));
+        }
+        let records: Vec<ResponseRecord> =
+            serde_json::from_value(value).map_err(|e| e.to_string())?;
         Ok((records, sha))
+    }
+
+    pub async fn write_value(
+        &self,
+        value: &serde_json::Value,
+        sha: Option<String>,
+    ) -> Result<(), String> {
+        let _guard = self.lock.lock().await;
+        let content = serde_json::to_string_pretty(value).map_err(|e| e.to_string())?;
+        let encoded = base64::engine::general_purpose::STANDARD.encode(content.as_bytes());
+        let mut payload = serde_json::json!({
+            "message": "update admin credentials",
+            "content": encoded,
+        });
+        if let Some(sha) = sha {
+            payload["sha"] = serde_json::json!(sha);
+        }
+        let response = self
+            .client
+            .put(&self.api)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .header("User-Agent", "inviteflow")
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(format!("GitHub trả {}", response.status()))
+        }
     }
 
     async fn write(&self, records: &[ResponseRecord], sha: Option<String>) -> Result<(), String> {

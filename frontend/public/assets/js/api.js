@@ -29,7 +29,7 @@ export async function postResponse(payload) {
 }
 
 export async function adminRequest(path, options = {}) {
-  const token = sessionStorage.getItem('adminToken') || '';
+  const token = sessionStorage.getItem('adminToken') || localStorage.getItem('adminToken') || '';
   const response = await fetch(`${base()}${path}`, {
     ...options,
     headers: {
@@ -40,7 +40,8 @@ export async function adminRequest(path, options = {}) {
   });
   if (response.status === 401) {
     sessionStorage.removeItem('adminToken');
-    throw new Error('Token không đúng');
+    localStorage.removeItem('adminToken');
+    throw new Error('Mật khẩu không đúng hoặc phiên hết hạn');
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

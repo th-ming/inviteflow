@@ -13,6 +13,7 @@ pub struct Config {
     pub port: u16,
     pub admin_token: String,
     pub admin_users: Vec<AdminUser>,
+    pub admin_file: String,
     pub db_driver: String,
     pub database_url: String,
     pub database_path: String,
@@ -52,6 +53,7 @@ impl Config {
             port,
             admin_token,
             admin_users,
+            admin_file: env::var("ADMIN_FILE").unwrap_or_else(|_| "admin.json".into()),
             db_driver: env::var("DB_DRIVER").unwrap_or_else(|_| "github".into()),
             database_url: env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "https://example.firebaseio.com".into())

@@ -19,7 +19,7 @@ pub struct ResponseRecord {
     pub city: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct NewResponse {
     pub consent: String,
     pub free_day: Option<String>,

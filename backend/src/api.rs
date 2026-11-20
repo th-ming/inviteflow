@@ -1,5 +1,8 @@
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Instant};
 
+use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::{PasswordHash, SaltString};
+use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 use axum::{
     Json, Router,
     extract::{ConnectInfo, Path, State},
@@ -7,14 +10,21 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{delete, get, post},
 };
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use tokio::sync::Mutex;
 use tower_http::{
     cors::{Any, CorsLayer},
     services::ServeDir,
 };
+use uuid::Uuid;
 
-use crate::{config::Config, db::Db, model::NewResponse, validate::validate};
+use crate::{
+    config::Config,
+    db::{Db, GithubDb},
+    model::NewResponse,
+    validate::validate,
+};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,17 +32,41 @@ pub struct AppState {
     pub db: Db,
     pub limiter: Arc<Mutex<HashMap<String, (u64, Instant)>>>,
     pub http: reqwest::Client,
+    pub admin_db: GithubDb,
+    pub sessions: Arc<Mutex<HashMap<String, (String, String, Instant)>>>,
 }
 
 impl AppState {
-    pub fn new(config: Arc<Config>, db: Db) -> Self {
+    pub fn new(config: Arc<Config>, db: Db, admin_db: GithubDb) -> Self {
         Self {
             config,
             db,
             limiter: Arc::new(Mutex::new(HashMap::new())),
             http: reqwest::Client::new(),
+            admin_db,
+            sessions: Arc::new(Mutex::new(HashMap::new())),
         }
     }
+}
+
+#[derive(Debug, Deserialize)]
+struct LoginPayload {
+    password: String,
+}
+
+#[derive(Debug, Serialize)]
+struct LoginResponse {
+    token: String,
+    role: String,
+    label: String,
+}
+
+pub fn hash_password(password: &str) -> Result<String, String> {
+    let salt = SaltString::generate(&mut OsRng);
+    Argon2::default()
+        .hash_password(password.as_bytes(), &salt)
+        .map(|hash| hash.to_string())
+        .map_err(|e| e.to_string())
 }
 
 struct ApiError(StatusCode, String);
@@ -55,12 +89,21 @@ fn equals(a: &str, b: &str) -> bool {
     diff == 0
 }
 
-fn authorized(state: &AppState, headers: &HeaderMap) -> Option<(String, String)> {
+async fn authorized(state: &AppState, headers: &HeaderMap) -> Option<(String, String)> {
     let provided = headers
         .get(AUTHORIZATION)
         .and_then(|value| value.to_str().ok())
         .and_then(|value| value.strip_prefix("Bearer "))?
         .trim();
+
+    {
+        let sessions = state.sessions.lock().await;
+        if let Some((role, label, created)) = sessions.get(provided) {
+            if created.elapsed() < std::time::Duration::from_secs(86400) {
+                return Some((role.clone(), label.clone()));
+            }
+        }
+    }
 
     state
         .config
@@ -166,14 +209,91 @@ async fn create(
     Ok((StatusCode::CREATED, Json(json!({ "id": record.id }))))
 }
 
+async fn edit(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Json(input): Json<NewResponse>,
+) -> Result<Json<Value>, ApiError> {
+    let (role, _) = authorized(&state, &headers)
+        .await
+        .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
+    if role != "admin" && role != "editor" {
+        return Err(ApiError(StatusCode::FORBIDDEN, "Không có quyền sửa".into()));
+    }
+
+    let existing = state
+        .db
+        .list()
+        .await
+        .map_err(|e| ApiError(StatusCode::INTERNAL_SERVER_ERROR, e))?
+        .into_iter()
+        .find(|item| item.id == id)
+        .ok_or_else(|| ApiError(StatusCode::NOT_FOUND, "Không tìm thấy lượt trả lời".into()))?;
+
+    let mut record = validate(input.clone()).map_err(|e| ApiError(StatusCode::BAD_REQUEST, e))?;
+    record.id = existing.id.clone();
+    record.created_at = existing.created_at.clone();
+    record.ip = existing.ip.clone();
+    record.country = existing.country.clone();
+    record.region = existing.region.clone();
+    record.city = existing.city.clone();
+    record.visitor_id = input.visitor_id.clone().or(existing.visitor_id.clone());
+    record.user_agent = input.user_agent.clone().or(existing.user_agent.clone());
+    record.language = input.language.clone().or(existing.language.clone());
+    record.timezone = input.timezone.clone().or(existing.timezone.clone());
+
+    let updated = state
+        .db
+        .update(record)
+        .await
+        .map_err(|e| ApiError(StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    Ok(Json(json!({ "updated": updated })))
+}
+
+async fn login(
+    State(state): State<AppState>,
+    Json(payload): Json<LoginPayload>,
+) -> Result<Json<LoginResponse>, ApiError> {
+    let (value, _) = state
+        .admin_db
+        .read_value()
+        .await
+        .map_err(|e| ApiError(StatusCode::INTERNAL_SERVER_ERROR, e))?;
+    let stored = value["password_hash"]
+        .as_str()
+        .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Chưa cấu hình mật khẩu".into()))?;
+    let parsed = PasswordHash::new(stored).map_err(|_| {
+        ApiError(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Hash không hợp lệ".into(),
+        )
+    })?;
+    Argon2::default()
+        .verify_password(payload.password.as_bytes(), &parsed)
+        .map_err(|_| ApiError(StatusCode::UNAUTHORIZED, "Mật khẩu không đúng".into()))?;
+
+    let token = Uuid::new_v4().to_string();
+    let role = value["role"].as_str().unwrap_or("admin").to_string();
+    let label = value["label"].as_str().unwrap_or("Chủ").to_string();
+    state
+        .sessions
+        .lock()
+        .await
+        .insert(token.clone(), (role.clone(), label.clone(), Instant::now()));
+    Ok(Json(LoginResponse { token, role, label }))
+}
+
 async fn me(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
     let (role, label) = authorized(&state, &headers)
+        .await
         .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
     Ok(Json(json!({ "role": role, "label": label })))
 }
 
 async fn list(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
     authorized(&state, &headers)
+        .await
         .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
     let records = state
         .db
@@ -189,6 +309,7 @@ async fn remove_one(
     Path(id): Path<String>,
 ) -> Result<Json<Value>, ApiError> {
     let (role, _) = authorized(&state, &headers)
+        .await
         .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
     if role != "admin" && role != "editor" {
         return Err(ApiError(StatusCode::FORBIDDEN, "Không có quyền xóa".into()));
@@ -203,6 +324,7 @@ async fn remove_one(
 
 async fn clear(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
     let (role, _) = authorized(&state, &headers)
+        .await
         .ok_or_else(|| ApiError(StatusCode::UNAUTHORIZED, "Cần token".into()))?;
     if role != "admin" {
         return Err(ApiError(
@@ -229,10 +351,11 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/api/health", get(health))
         .route("/api/me", get(me))
+        .route("/api/login", post(login))
         .route("/health", get(health))
         .route("/kaithhealth", get(health))
         .route("/api/responses", post(create).get(list).delete(clear))
-        .route("/api/responses/{id}", delete(remove_one))
+        .route("/api/responses/{id}", delete(remove_one).patch(edit))
         .fallback_service(ServeDir::new(state.config.frontend_dir.clone()))
         .layer(cors)
         .with_state(state)
@@ -255,6 +378,7 @@ mod tests {
                 role: "admin".into(),
                 label: "Chủ".into(),
             }],
+            admin_file: "admin.json".into(),
             db_driver: "file".into(),
             database_url: "https://example.firebaseio.com".into(),
             database_path: "responses".into(),
@@ -271,6 +395,7 @@ mod tests {
         AppState::new(
             config.clone(),
             Db::File(FileDb::new(config.data_file.clone())),
+            GithubDb::new("th-ming/inviteflow-db", "admin.json", ""),
         )
     }
 

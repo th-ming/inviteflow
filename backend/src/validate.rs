@@ -94,6 +94,10 @@ mod tests {
             user_agent: None,
             language: None,
             timezone: None,
+            ip: None,
+            country: None,
+            region: None,
+            city: None,
         }
     }
 

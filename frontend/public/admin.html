@@ -4,44 +4,55 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Lượt trả lời</title>
+<title>Quản trị Inviteflow</title>
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://inviteflow-api2.onrender.com';</script>
 </head>
 <body>
-<div class="app">
-  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta" id="roleMeta">Quản lý</span></header>
 
-  <section class="panel" id="login" style="max-width:480px;margin:48px auto">
-    <p class="eyebrow">Riêng tư</p>
-    <h1>Kết nối quản lý</h1>
+<section class="login-screen" id="login">
+  <div class="panel" style="max-width:440px;width:100%">
+    <p class="eyebrow">Khu vực riêng tư</p>
+    <h1>Đăng nhập quản trị</h1>
     <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    <label class="eyebrow" for="token">Token quản lý</label>
-    <input class="field" type="password" id="token" autocomplete="current-password">
-    <div class="actions"><button type="button" class="btn btn-primary" id="connect">Kết nối</button></div>
+    <label class="eyebrow" for="password">Mật khẩu quản lý</label>
+    <div class="field-wrap">
+      <input class="field" type="password" id="password" autocomplete="current-password" style="padding-right:48px">
+      <button type="button" class="eye-btn" id="togglePass" aria-label="Hiện mật khẩu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg>
+      </button>
+    </div>
+    <label class="remember"><input type="checkbox" id="remember"> Ghi nhớ đăng nhập</label>
+    <div class="actions" style="margin-top:20px"><button type="button" class="btn btn-primary" id="loginBtn" style="width:100%">Đăng nhập</button></div>
     <p class="status" id="loginStatus" role="status"></p>
-  </section>
+  </div>
+</section>
 
-  <main class="layout" id="shell" hidden>
-    <nav class="rail" aria-label="Quản lý">
-      <div class="step active"><span class="num">01</span>Tổng quan</div>
-      <div class="step"><span class="num">02</span>Lượt trả lời</div>
+<div class="admin-shell" id="shell" hidden>
+  <aside class="sidebar">
+    <span class="brand">Inviteflow</span>
+    <nav class="nav" aria-label="Mục quản trị">
+      <button type="button" class="nav-item active" data-section="overview"><span class="num">01</span>Tổng quan</button>
+      <button type="button" class="nav-item" data-section="responses"><span class="num">02</span>Lượt trả lời</button>
     </nav>
+    <div class="sidebar-foot">
+      <span class="meta" id="roleLabel">—</span>
+      <button type="button" class="btn" id="logoutBtn">Đăng xuất</button>
+    </div>
+  </aside>
 
-    <section class="stage">
-      <div class="panel">
-        <p class="eyebrow">Riêng tư</p>
-        <h1>Lượt trả lời</h1>
-        <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <div class="actions" style="justify-content:space-between">
-          <span class="meta" id="sessionText">Đã kết nối</span>
-          <div class="actions" style="margin-top:0">
-            <button type="button" class="btn" id="refresh">Làm mới</button>
-            <button type="button" class="btn" id="export">Xuất CSV</button>
-            <button type="button" class="btn" id="clear">Xóa toàn bộ</button>
-          </div>
-        </div>
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <h2 id="pageTitle">Tổng quan</h2>
+      <div class="toolbar">
+        <button type="button" class="btn" id="addBtn">Thêm lượt</button>
+        <button type="button" class="btn" id="exportBtn">Xuất CSV</button>
+        <button type="button" class="btn" id="refreshBtn">Làm mới</button>
+      </div>
+    </header>
 
+    <div class="admin-content">
+      <section class="section" id="overview">
         <div class="stat-grid">
           <div class="stat"><span class="stat-label">Tổng lượt</span><strong class="stat-value" id="statTotal">0</strong></div>
           <div class="stat stat-accent"><span class="stat-label">Đồng ý</span><strong class="stat-value" id="statYes">0</strong></div>
@@ -49,61 +60,127 @@
           <div class="stat"><span class="stat-label">Hôm nay</span><strong class="stat-value" id="statToday">0</strong></div>
         </div>
 
-        <section class="chart-block" aria-label="Lượt trả lời theo ngày">
+        <section class="chart-block">
           <div class="chart-head"><span class="stat-label">Lượt theo ngày</span><span class="meta" id="chartRange"></span></div>
           <div class="chart" id="chart"></div>
         </section>
 
-        <div class="filters">
-          <input class="field grow" type="search" id="search" placeholder="Tìm món, nước, nơi, người…" aria-label="Tìm kiếm">
-          <select class="field" id="consentFilter" aria-label="Lọc câu trả lời">
-            <option value="">Tất cả câu trả lời</option>
-            <option value="Vâng">Đồng ý</option>
-            <option value="Không Nha">Từ chối</option>
-          </select>
-          <input class="field" type="date" id="dateFilter" aria-label="Lọc từ ngày">
+        <div class="breakdown-grid">
+          <div class="breakdown"><h3>Món được chọn nhiều</h3><div id="topFood"></div></div>
+          <div class="breakdown"><h3>Nước được chọn nhiều</h3><div id="topDrink"></div></div>
+          <div class="breakdown"><h3>Nơi được chọn nhiều</h3><div id="topPlace"></div></div>
         </div>
+      </section>
 
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Thời gian</th><th>Kết quả</th><th>Ngày hẹn</th><th>Món</th><th>Nước</th><th>Nơi</th><th>Vị trí</th><th></th></tr></thead>
-            <tbody id="rows"></tbody>
-          </table>
+      <section class="section" id="responses" hidden>
+        <div class="panel" style="padding:24px">
+          <div class="filters" style="margin-top:0">
+            <input class="field grow" type="search" id="search" placeholder="Tìm món, nước, nơi, người…" aria-label="Tìm kiếm">
+            <select class="field" id="consentFilter" aria-label="Lọc câu trả lời">
+              <option value="">Tất cả</option>
+              <option value="Vâng">Đồng ý</option>
+              <option value="Không Nha">Từ chối</option>
+            </select>
+            <input class="field" type="date" id="dateFilter" aria-label="Lọc từ ngày">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Thời gian</th><th>Kết quả</th><th>Ngày hẹn</th><th>Món</th><th>Nước</th><th>Nơi</th><th>Vị trí</th><th></th></tr></thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <p class="status" id="empty" hidden>Chưa có lượt trả lời nào</p>
+          <p class="status" id="status" role="status"></p>
         </div>
-        <p class="status" id="empty" hidden>Chưa có lượt trả lời nào</p>
-        <p class="status" id="status" role="status"></p>
-      </div>
-    </section>
-  </main>
+      </section>
+    </div>
+  </div>
 </div>
 
 <aside class="drawer" id="drawer" hidden aria-label="Chi tiết lượt trả lời">
   <button type="button" class="btn drawer-close" id="drawerClose">Đóng</button>
-  <p class="eyebrow">Chi tiết</p>
-  <h2 id="drawerTitle">Lượt trả lời</h2>
-  <div id="drawerRows"></div>
-  <pre id="drawerRaw"></pre>
+  <div id="drawerView">
+    <p class="eyebrow">Chi tiết lượt</p>
+    <h2 id="detailTitle">—</h2>
+    <div id="detailRows"></div>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="editFromDetail">Sửa</button>
+      <button type="button" class="btn" id="deleteFromDetail">Xóa</button>
+    </div>
+  </div>
+  <form id="drawerForm" hidden>
+    <p class="eyebrow" id="formMode">Sửa lượt</p>
+    <h2 id="formTitle">—</h2>
+    <div class="form-grid" style="margin-top:20px">
+      <div class="full">
+        <label for="fConsent">Câu trả lời</label>
+        <select class="field" id="fConsent">
+          <option value="Vâng">Đồng ý</option>
+          <option value="Không Nha">Từ chối</option>
+        </select>
+      </div>
+      <div class="full">
+        <label for="fDay">Ngày hẹn</label>
+        <input class="field" type="date" id="fDay">
+      </div>
+      <div>
+        <label for="fFood">Món</label>
+        <input class="field" id="fFood">
+      </div>
+      <div>
+        <label for="fDrink">Nước</label>
+        <input class="field" id="fDrink">
+      </div>
+      <div class="full">
+        <label for="fPlace">Nơi</label>
+        <input class="field" id="fPlace">
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Lưu</button>
+      <button type="button" class="btn" id="formCancel">Hủy</button>
+    </div>
+    <p class="status" id="formStatus"></p>
+  </form>
 </aside>
 
 <script type="module">
   import { adminRequest } from './assets/js/api.js';
   import { byId } from './assets/js/app.js';
 
-  const login = byId('login');
-  const shell = byId('shell');
-  const drawer = byId('drawer');
-  const tokenInput = byId('token');
+  const API = String(window.API_BASE || '').replace(/\/$/, '');
+  let role = 'viewer';
+  let label = '';
   let all = [];
   let filtered = [];
-  let role = 'viewer';
+  let editingId = null;
+
+  const pageTitles = { overview: 'Tổng quan', responses: 'Lượt trả lời' };
+
+  function getToken() {
+    return sessionStorage.getItem('adminToken') || localStorage.getItem('adminToken') || '';
+  }
+
+  function clearAuth() {
+    sessionStorage.removeItem('adminToken');
+    localStorage.removeItem('adminToken');
+  }
 
   function showLogin(message) {
-    shell.hidden = true;
-    drawer.hidden = true;
-    login.hidden = false;
-    tokenInput.value = '';
+    byId('shell').hidden = true;
+    byId('drawer').hidden = true;
+    byId('login').hidden = false;
     byId('loginStatus').textContent = message || '';
-    tokenInput.focus();
+    byId('password').focus();
+  }
+
+  function locationOf(item) {
+    return [item.city, item.region, item.country].filter(Boolean).join(', ') || '—';
+  }
+
+  function time(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString('vi-VN');
   }
 
   function escapeCsv(value) {
@@ -111,8 +188,12 @@
     return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   }
 
-  function locationOf(item) {
-    return [item.city, item.region, item.country].filter(Boolean).join(', ') || '—';
+  function stats() {
+    const today = new Date().toISOString().slice(0, 10);
+    byId('statTotal').textContent = all.length;
+    byId('statYes').textContent = all.filter((item) => item.consent === 'Vâng').length;
+    byId('statNo').textContent = all.filter((item) => item.consent === 'Không Nha').length;
+    byId('statToday').textContent = all.filter((item) => String(item.created_at).startsWith(today)).length;
   }
 
   function chart() {
@@ -122,9 +203,9 @@
       if (day) counts.set(day, (counts.get(day) || 0) + 1);
     });
     const days = [...counts.keys()].sort().slice(-14);
+    byId('chartRange').textContent = days.length ? `${days[0]} → ${days[days.length - 1]}` : 'Không có dữ liệu';
     const host = byId('chart');
     host.textContent = '';
-    byId('chartRange').textContent = days.length ? `${days[0]} → ${days[days.length - 1]}` : 'Không có dữ liệu';
     const max = Math.max(1, ...days.map((day) => counts.get(day)));
     days.forEach((day) => {
       const count = counts.get(day);
@@ -136,20 +217,42 @@
       const bar = document.createElement('div');
       bar.className = 'chart-bar';
       bar.style.height = `${Math.max(2, Math.round((count / max) * 64))}px`;
-      const label = document.createElement('span');
-      label.className = 'chart-label';
-      label.textContent = day.slice(5);
-      column.append(value, bar, label);
+      const name = document.createElement('span');
+      name.className = 'chart-label';
+      name.textContent = day.slice(5);
+      column.append(value, bar, name);
       host.appendChild(column);
     });
   }
 
-  function stats() {
-    const today = new Date().toISOString().slice(0, 10);
-    byId('statTotal').textContent = all.length;
-    byId('statYes').textContent = all.filter((item) => item.consent === 'Vâng').length;
-    byId('statNo').textContent = all.filter((item) => item.consent === 'Không Nha').length;
-    byId('statToday').textContent = all.filter((item) => String(item.created_at).startsWith(today)).length;
+  function breakdown(field, hostId) {
+    const counts = new Map();
+    all.forEach((item) => {
+      const value = item[field];
+      if (!value) return;
+      counts.set(value, (counts.get(value) || 0) + 1);
+    });
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const host = byId(hostId);
+    host.textContent = '';
+    if (!top.length) {
+      const empty = document.createElement('p');
+      empty.className = 'muted';
+      empty.textContent = 'Chưa có dữ liệu';
+      host.appendChild(empty);
+      return;
+    }
+    top.forEach(([name, count]) => {
+      const row = document.createElement('div');
+      row.className = 'breakdown-row';
+      const left = document.createElement('span');
+      left.textContent = name;
+      const right = document.createElement('span');
+      right.className = 'count';
+      right.textContent = `${count} lượt`;
+      row.append(left, right);
+      host.appendChild(row);
+    });
   }
 
   function applyFilters() {
@@ -161,92 +264,130 @@
       if (from && String(item.created_at).slice(0, 10) < from) return false;
       if (!term) return true;
       return [item.food, item.drink, item.place, item.free_day, item.visitor_id,
-        item.timezone, item.ip, item.country, item.region, item.city]
+        item.ip, item.country, item.region, item.city]
         .some((value) => String(value || '').toLowerCase().includes(term));
     });
     chart();
     render();
   }
 
-  function time(value) {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString('vi-VN');
-  }
-
   function render() {
     const rows = byId('rows');
     rows.textContent = '';
     byId('empty').hidden = filtered.length > 0;
-    byId('sessionText').textContent = `Đã kết nối · ${filtered.length} / ${all.length} lượt`;
     byId('status').textContent = '';
 
     filtered.forEach((item) => {
       const tr = document.createElement('tr');
-      const values = [
-        time(item.created_at), item.consent, item.free_day || '—',
-        item.food || '—', item.drink || '—', item.place || '—',
-        locationOf(item)
-      ];
-      values.forEach((value) => {
-        const td = document.createElement('td');
-        td.textContent = value;
-        tr.appendChild(td);
-      });
-
+      [time(item.created_at), item.consent, item.free_day || '—', item.food || '—',
+        item.drink || '—', item.place || '—', locationOf(item)]
+        .forEach((value) => {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.appendChild(td);
+        });
       const action = document.createElement('td');
-      const view = document.createElement('button');
-      view.type = 'button';
-      view.className = 'btn';
-      view.textContent = 'Xem';
-      view.addEventListener('click', () => openDetail(item));
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'btn';
+      edit.textContent = 'Sửa';
+      edit.addEventListener('click', () => openForm(item));
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'btn';
       del.textContent = 'Xóa';
       del.addEventListener('click', async () => {
+        if (!confirm(`Xóa lượt trả lời ${item.id.slice(0, 8)}?`)) return;
         try {
           await adminRequest(`/api/responses/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
           await load();
         } catch (error) { byId('status').textContent = error.message; }
       });
-      if (role === 'admin' || role === 'editor') {
-        action.append(view, document.createTextNode(' '), del);
-      } else {
-        action.appendChild(view);
-      }
+      const wrap = document.createElement('span');
+      wrap.style.display = 'inline-flex';
+      wrap.style.gap = '8px';
+      wrap.append(edit, del);
+      action.appendChild(wrap);
       tr.appendChild(action);
+      tr.addEventListener('click', (event) => {
+        if (event.target.closest('button')) return;
+        openDetail(item);
+      });
       rows.appendChild(tr);
     });
   }
 
   function openDetail(item) {
-    byId('drawerTitle').textContent = time(item.created_at);
-    const container = byId('drawerRows');
-    container.textContent = '';
-    const fields = [
+    editingId = item.id;
+    byId('drawerView').hidden = false;
+    byId('drawerForm').hidden = true;
+    byId('detailTitle').textContent = time(item.created_at);
+    const host = byId('detailRows');
+    host.textContent = '';
+    [
       ['Mã lượt', item.id], ['Câu trả lời', item.consent], ['Ngày hẹn', item.free_day],
       ['Món', item.food], ['Nước', item.drink], ['Nơi', item.place],
       ['Mã người', item.visitor_id], ['Ngôn ngữ', item.language],
       ['Múi giờ', item.timezone], ['IP', item.ip],
       ['Quốc gia', item.country], ['Khu vực', item.region], ['Thành phố', item.city],
       ['Thiết bị', item.user_agent]
-    ];
-    fields.forEach(([label, value]) => {
+    ].forEach(([name, value]) => {
       const row = document.createElement('div');
       row.className = 'drawer-row';
       const left = document.createElement('span');
-      left.textContent = label;
+      left.textContent = name;
       const right = document.createElement('span');
       right.textContent = value || '—';
       row.append(left, right);
-      container.appendChild(row);
+      host.appendChild(row);
     });
-    byId('drawerRaw').textContent = JSON.stringify(item, null, 2);
-    drawer.hidden = false;
+    byId('drawer').hidden = false;
+  }
+
+  function openForm(item) {
+    editingId = item ? item.id : null;
+    byId('drawerView').hidden = true;
+    byId('drawerForm').hidden = false;
+    byId('formMode').textContent = item ? 'Sửa lượt' : 'Thêm lượt';
+    byId('formTitle').textContent = item ? time(item.created_at) : 'Lượt mới';
+    byId('fConsent').value = item ? item.consent : 'Vâng';
+    byId('fDay').value = item && item.free_day ? item.free_day : '';
+    byId('fFood').value = item && item.food ? item.food : '';
+    byId('fDrink').value = item && item.drink ? item.drink : '';
+    byId('fPlace').value = item && item.place ? item.place : '';
+    byId('formStatus').textContent = '';
+    byId('drawer').hidden = false;
+  }
+
+  async function saveForm(event) {
+    event.preventDefault();
+    const payload = {
+      consent: byId('fConsent').value,
+      free_day: byId('fDay').value || '',
+      food: byId('fFood').value.trim() || '',
+      drink: byId('fDrink').value.trim() || '',
+      place: byId('fPlace').value.trim() || ''
+    };
+    try {
+      if (editingId) {
+        await adminRequest(`/api/responses/${encodeURIComponent(editingId)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await adminRequest('/api/responses', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      byId('formStatus').textContent = 'Đã lưu';
+      byId('drawer').hidden = true;
+      await load();
+    } catch (error) {
+      byId('formStatus').textContent = error.message;
+    }
   }
 
   function exportCsv() {
-    const header = ['id', 'created_at', 'consent', 'free_day', 'food', 'drink', 'place', 'visitor_id', 'language', 'timezone', 'ip', 'country', 'region', 'city', 'user_agent'];
+    const header = ['id', 'created_at', 'consent', 'free_day', 'food', 'drink', 'place',
+      'visitor_id', 'language', 'timezone', 'ip', 'country', 'region', 'city', 'user_agent'];
     const lines = [header.join(',')];
     filtered.forEach((item) => lines.push(header.map((key) => escapeCsv(item[key])).join(',')));
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -258,42 +399,85 @@
   }
 
   async function load() {
-    if (!sessionStorage.getItem('adminToken')) { showLogin(); return; }
-    login.hidden = true;
-    shell.hidden = false;
+    if (!getToken()) { showLogin(); return; }
     try {
       const profile = await adminRequest('/api/me');
       role = profile.role;
-      byId('roleMeta').textContent = `Quản lý · ${profile.label}`;
-      byId('clear').hidden = role !== 'admin';
+      label = profile.label;
+      byId('roleLabel').textContent = `${label} · ${role}`;
+      byId('addBtn').hidden = role === 'viewer';
       all = await adminRequest('/api/responses');
       stats();
       applyFilters();
+      breakdown('food', 'topFood');
+      breakdown('drink', 'topDrink');
+      breakdown('place', 'topPlace');
     } catch (error) { showLogin(error.message); }
   }
 
-  async function connect() {
-    const token = tokenInput.value.trim();
-    if (!token) { byId('loginStatus').textContent = 'Nhập token để tiếp tục'; return; }
-    sessionStorage.setItem('adminToken', token);
-    await load();
+  async function login(password, remember) {
+    const response = await fetch(`${API}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || `Lỗi ${response.status}`);
+    (remember ? localStorage : sessionStorage).setItem('adminToken', body.token);
+    (remember ? sessionStorage : localStorage).removeItem('adminToken');
   }
 
-  byId('connect').addEventListener('click', connect);
-  tokenInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') connect(); });
-  byId('refresh').addEventListener('click', load);
-  byId('export').addEventListener('click', exportCsv);
+  byId('loginBtn').addEventListener('click', async () => {
+    const password = byId('password').value;
+    if (!password) { byId('loginStatus').textContent = 'Nhập mật khẩu'; return; }
+    try {
+      await login(password, byId('remember').checked);
+      await load();
+    } catch (error) { byId('loginStatus').textContent = error.message; }
+  });
+  byId('password').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') byId('loginBtn').click();
+  });
+  byId('togglePass').addEventListener('click', () => {
+    const input = byId('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    byId('togglePass').setAttribute('aria-label', input.type === 'password' ? 'Hiện mật khẩu' : 'Ẩn mật khẩu');
+  });
+  byId('logoutBtn').addEventListener('click', () => {
+    clearAuth();
+    showLogin();
+  });
+  document.querySelectorAll('.nav-item').forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active'));
+      button.classList.add('active');
+      const section = button.dataset.section;
+      byId('overview').hidden = section !== 'overview';
+      byId('responses').hidden = section !== 'responses';
+      byId('pageTitle').textContent = pageTitles[section];
+    });
+  });
+  byId('refreshBtn').addEventListener('click', load);
+  byId('addBtn').addEventListener('click', () => openForm(null));
+  byId('exportBtn').addEventListener('click', exportCsv);
   byId('search').addEventListener('input', applyFilters);
   byId('consentFilter').addEventListener('change', applyFilters);
   byId('dateFilter').addEventListener('change', applyFilters);
-  byId('drawerClose').addEventListener('click', () => { drawer.hidden = true; });
-  byId('clear').addEventListener('click', async () => {
-    if (!confirm('Xóa toàn bộ lượt trả lời?')) return;
+  byId('drawerClose').addEventListener('click', () => { byId('drawer').hidden = true; });
+  byId('editFromDetail').addEventListener('click', () => {
+    const item = all.find((entry) => entry.id === editingId);
+    if (item) openForm(item);
+  });
+  byId('deleteFromDetail').addEventListener('click', async () => {
+    if (!confirm('Xóa lượt trả lời này?')) return;
     try {
-      await adminRequest('/api/responses', { method: 'DELETE' });
+      await adminRequest(`/api/responses/${encodeURIComponent(editingId)}`, { method: 'DELETE' });
+      byId('drawer').hidden = true;
       await load();
     } catch (error) { byId('status').textContent = error.message; }
   });
+  byId('formCancel').addEventListener('click', () => { byId('drawer').hidden = true; });
+  byId('drawerForm').addEventListener('submit', saveForm);
 
   load();
 </script>
