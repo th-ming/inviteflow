@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lượt trả lời</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script>window.API_BASE = window.API_BASE || 'https://minneapolis-exhibits-hip-relates.trycloudflare.com';</script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Quản lý</span></header>
+
+  <section class="panel" id="login" style="max-width:480px;margin:48px auto">
+    <p class="eyebrow">Riêng tư</p>
+    <h1>Kết nối quản lý</h1>
+    <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <label class="eyebrow" for="token">Token quản lý</label>
+    <input class="field" type="password" id="token" autocomplete="current-password">
+    <div class="actions"><button type="button" class="btn btn-primary" id="connect">Kết nối</button></div>
+    <p class="status" id="loginStatus" role="status"></p>
+  </section>
+
+  <main class="layout" id="shell" hidden>
+    <nav class="rail" aria-label="Quản lý">
+      <div class="step active"><span class="num">01</span>Lượt trả lời</div>
+    </nav>
+    <section class="stage panel">
+      <p class="eyebrow">Riêng tư</p>
+      <h1>Lượt trả lời</h1>
+      <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="actions" style="justify-content:space-between">
+        <span class="meta" id="sessionText">Đã kết nối</span>
+        <button type="button" class="btn" id="clear">Xóa toàn bộ</button>
+      </div>
+      <div class="table-wrap" style="margin-top:24px">
+        <table>
+          <thead><tr><th>Thời gian</th><th>Câu trả lời</th><th>Ngày</th><th>Món</th><th>Nước</th><th>Nơi</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="status" id="empty" hidden>Chưa có lượt trả lời nào</p>
+      <p class="status" id="status" role="status"></p>
+    </section>
+  </main>
+</div>
+<script type="module">
+  import { adminRequest } from './assets/js/api.js';
+  import { byId } from './assets/js/app.js';
+
+  const login = byId('login');
+  const shell = byId('shell');
+  const tokenInput = byId('token');
+
+  function showLogin(message) {
+    shell.hidden = true;
+    login.hidden = false;
+    tokenInput.value = '';
+    byId('loginStatus').textContent = message || '';
+    tokenInput.focus();
+  }
+
+  function render(data) {
+    const rows = byId('rows');
+    rows.textContent = '';
+    byId('sessionText').textContent = `Đã kết nối · ${data.length} lượt`;
+    byId('empty').hidden = data.length > 0;
+    byId('status').textContent = '';
+
+    data.forEach((item) => {
+      const tr = document.createElement('tr');
+      ['created_at', 'consent', 'free_day', 'food', 'drink', 'place'].forEach((field) => {
+        const td = document.createElement('td');
+        td.textContent = item[field] || '';
+        tr.appendChild(td);
+      });
+      const action = document.createElement('td');
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn';
+      del.textContent = 'Xóa';
+      del.addEventListener('click', async () => {
+        try {
+          await adminRequest(`/api/responses/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
+          await load();
+        } catch (error) { byId('status').textContent = error.message; }
+      });
+      action.appendChild(del);
+      tr.appendChild(action);
+      rows.appendChild(tr);
+    });
+  }
+
+  async function load() {
+    if (!sessionStorage.getItem('adminToken')) { showLogin(); return; }
+    login.hidden = true;
+    shell.hidden = false;
+    try { render(await adminRequest('/api/responses')); }
+    catch (error) { showLogin(error.message); }
+  }
+
+  async function connect() {
+    const token = tokenInput.value.trim();
+    if (!token) { byId('loginStatus').textContent = 'Nhập token để tiếp tục'; return; }
+    sessionStorage.setItem('adminToken', token);
+    await load();
+  }
+
+  byId('connect').addEventListener('click', connect);
+  tokenInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') connect(); });
+  byId('clear').addEventListener('click', async () => {
+    if (!confirm('Xóa toàn bộ lượt trả lời?')) return;
+    try {
+      await adminRequest('/api/responses', { method: 'DELETE' });
+      await load();
+    } catch (error) { byId('status').textContent = error.message; }
+  });
+
+  load();
+</script>
+</body>
+</html>

@@ -33,17 +33,16 @@ export function reveal(id) {
   if (node) node.hidden = false;
 }
 
-export function renderChoices(list, containerId, key, onPick) {
+export function renderChoices(items, containerId, key, onPick) {
   const container = byId(containerId);
   if (!container) return;
 
-  list.forEach((entry) => {
-    const label = typeof entry === 'string' ? entry : entry.name;
-    const image = typeof entry === 'string' ? '' : entry.image;
+  items.forEach((item) => {
+    const label = typeof item === 'string' ? item : item.name;
+    const image = typeof item === 'string' ? '' : item.image;
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = image ? 'choice choice-image' : 'choice';
-    button.textContent = '';
+    button.className = 'choice';
     button.setAttribute('aria-pressed', String(read(key) === label));
 
     if (image) {
@@ -56,13 +55,14 @@ export function renderChoices(list, containerId, key, onPick) {
     }
 
     const text = document.createElement('span');
+    text.className = 'label';
     text.textContent = label;
     button.appendChild(text);
 
     button.addEventListener('click', () => {
       save(key, label);
-      container.querySelectorAll('.choice').forEach((item) => {
-        item.setAttribute('aria-pressed', String(item === button));
+      container.querySelectorAll('.choice').forEach((node) => {
+        node.setAttribute('aria-pressed', String(node === button));
       });
       onPick(label);
     });

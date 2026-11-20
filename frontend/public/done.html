@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hẹn gặp bạn</title>
+<meta name="description" content="Lời mời đã hoàn tất.">
+<meta property="og:title" content="Một lời mời">
+<meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
+<link rel="canonical" href="https://motloimoi.cc.cd/done.html">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>window.API_BASE = window.API_BASE || 'https://minneapolis-exhibits-hip-relates.trycloudflare.com';</script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Hoàn tất</span></header>
+  <div class="layout">
+    <nav class="rail" aria-label="Các bước">
+      <div class="step done"><span class="num">01</span>Ngày</div>
+      <div class="step done"><span class="num">02</span>Món</div>
+      <div class="step done"><span class="num">03</span>Nước</div>
+      <div class="step done"><span class="num">04</span>Nơi</div>
+    </nav>
+    <main class="stage">
+      <section class="panel">
+        <p class="eyebrow">Xong rồi</p>
+        <h1>Hẹn gặp bạn</h1>
+        <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <p class="lead">Đi đâu miễn đi cùng em là được</p>
+        <div class="receipt">
+          <div class="receipt-row"><span class="receipt-label">Ngày</span><span class="receipt-value" id="day">—</span></div>
+          <div class="receipt-row"><span class="receipt-label">Món</span><span class="receipt-value" id="food">—</span></div>
+          <div class="receipt-row"><span class="receipt-label">Nước</span><span class="receipt-value" id="drink">—</span></div>
+          <div class="receipt-row"><span class="receipt-label">Nơi</span><span class="receipt-value" id="place">—</span></div>
+        </div>
+        <p class="status-line" id="statusLine"><span class="status-dot"></span><span id="statusText">Đang gửi lời trả lời</span></p>
+      </section>
+    </main>
+  </div>
+</div>
+<script type="module">
+  import { byId, read, formatDay } from './assets/js/app.js';
+  import { postResponse } from './assets/js/api.js';
+
+  byId('day').textContent = read('freeDay') ? formatDay(read('freeDay')) : 'Chưa chọn';
+  byId('food').textContent = read('food') || 'Chưa chọn';
+  byId('drink').textContent = read('drink') || 'Chưa chọn';
+  byId('place').textContent = read('place') || 'Chưa chọn';
+
+  if (read('consent') === 'Vâng' && !sessionStorage.getItem('inviteSubmitted')) {
+    sessionStorage.setItem('inviteSubmitted', '1');
+    postResponse({
+      consent: 'Vâng', freeDay: read('freeDay'), food: read('food'),
+      drink: read('drink'), place: read('place')
+    }).then(() => {
+      byId('statusLine').classList.add('done');
+      byId('statusText').textContent = 'Đã ghi nhận lời trả lời';
+    }).catch(() => {
+      byId('statusText').textContent = 'Chưa ghi được, thử lại sau';
+    });
+  } else {
+    byId('statusLine').classList.toggle('done', read('consent') === 'Vâng');
+    byId('statusText').textContent = read('consent') === 'Vâng'
+      ? 'Đã ghi nhận lời trả lời'
+      : 'Chưa có lựa nào được ghi lại';
+  }
+</script>
+</body>
+</html>

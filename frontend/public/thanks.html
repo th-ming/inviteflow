@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cảm ơn</title>
+<meta name="description" content="Cảm ơn bạn đã bấm nút.">
+<meta property="og:title" content="Một lời mời">
+<meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
+<link rel="canonical" href="https://motloimoi.cc.cd/thanks.html">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>window.API_BASE = window.API_BASE || 'https://minneapolis-exhibits-hip-relates.trycloudflare.com';</script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Bước 1 / 4</span></header>
+  <div class="layout">
+    <nav class="rail" aria-label="Các bước">
+      <div class="step active"><span class="num">01</span>Ngày</div>
+      <div class="step"><span class="num">02</span>Món</div>
+      <div class="step"><span class="num">03</span>Nước</div>
+      <div class="step"><span class="num">04</span>Nơi</div>
+    </nav>
+    <main class="stage">
+      <section class="panel">
+        <p class="eyebrow">Bắt đầu</p>
+        <h1>Cảm ơn bạn đã bấm nút</h1>
+        <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <p class="lead">Chọn một ngày mình cùng rảnh, rồi tính tiếp nhé.</p>
+        <div class="progress" aria-hidden="true"><span class="on"></span><span></span><span></span><span></span></div>
+        <div class="actions"><button type="button" class="btn btn-primary" id="next">Tiếp</button></div>
+        <p class="status" id="status"></p>
+      </section>
+    </main>
+  </div>
+</div>
+<script type="module">
+  import { go, setStatus } from './assets/js/app.js';
+  const words = ['Bấm đi mà', 'Click đi', 'Thử đi', 'Đừng ngại', 'Bấm mạnh vào'];
+  const button = document.getElementById('next');
+  let busy = false;
+  button.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    let i = 0;
+    const timer = setInterval(() => {
+      button.textContent = words[i % words.length];
+      i += 1;
+    }, 100);
+    setTimeout(() => {
+      clearInterval(timer);
+      button.textContent = 'Tiếp';
+      busy = false;
+      setStatus('status', 'Cảm ơn bạn đã bấm nút');
+      go('date.html');
+    }, 900);
+  });
+</script>
+</body>
+</html>

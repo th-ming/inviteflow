@@ -3,35 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Một lời mời</title>
+<meta name="description" content="Một lời mời đi chơi, gửi riêng cho một người.">
 <meta property="og:title" content="Một lời mời">
 <meta property="og:description" content="Một lời mời đi chơi, gửi riêng cho một người.">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/">
-<title>Một lời mời</title>
-<meta name="description" content="Một lời mời đi chơi, gửi riêng cho một người.">
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://minneapolis-exhibits-hip-relates.trycloudflare.com';</script>
 </head>
 <body>
-<main class="note">
-  <p class="eyebrow">Một lời mời</p>
-  <h1>Làm người yêu anh nhé?</h1>
-  <svg class="signature" viewBox="0 0 132 10" aria-hidden="true"><path d="M2 7c22-4 55-6 128-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-  <p>Mình cùng nhau đi chơi nha</p>
-  <div class="moment">
-    <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
-      <circle cx="28" cy="28" r="26" fill="#fffdf9" stroke="currentColor" stroke-width="1.5"/>
-      <path d="M18 30c0-7 4-11 10-11s10 4 10 11M18 30h20M22 30v7a6 6 0 0 0 12 0v-7M36 24c3-2 5-1 5 1s-2 4-5 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    <p>Một buổi chiều, một ly nước, và người cần hỏi một câu.</p>
-  </div>
-  <img id="catImage" src="https://i.pinimg.com/originals/47/42/9e/47429e058b9834c5d27d8faf0d96c2c6.gif" alt="Mèo con" width="220" height="160">
-  <div class="actions">
-    <button type="button" class="btn btn-primary" id="yes">Vâng</button>
-    <button type="button" class="btn" id="no">Không Nha</button>
-  </div>
-  <p class="status" id="status"></p>
-</main>
+<div class="app">
+  <header class="topbar">
+    <span class="brand">Inviteflow</span>
+    <span class="meta">Một lời mời riêng</span>
+  </header>
+
+  <main class="panel" style="margin-top:48px">
+    <div class="split">
+      <div>
+        <p class="eyebrow">Một lời mời</p>
+        <h1>Làm người yêu anh nhé?</h1>
+        <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <p class="lead">Mình cùng nhau đi chơi nha. Một buổi chiều, một ly nước, và một câu hỏi.</p>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="yes">Vâng</button>
+          <button type="button" class="btn" id="no">Không Nha</button>
+        </div>
+        <p class="status" id="status"></p>
+      </div>
+      <img id="catImage" class="hero-img" src="https://i.pinimg.com/originals/47/42/9e/47429e058b9834c5d27d8faf0d96c2c6.gif" alt="Mèo con">
+    </div>
+  </main>
+</div>
 <script type="module">
   import { save, go, setStatus } from './assets/js/app.js';
   import { postResponse } from './assets/js/api.js';
@@ -42,32 +46,17 @@
     'https://i.pinimg.com/736x/a1/9c/1a/a19c1a969a8a82f5cde6a7848feaa807.jpg',
     'https://i.pinimg.com/736x/b8/d1/ae/b8d1ae6b9861b6e625b95e3b89bf9313.jpg'
   ];
-  const colors = [
-    { yes: '#a94f35', no: '#776e64' },
-    { yes: '#3f6f52', no: '#8a3d28' },
-    { yes: '#6a4f8a', no: '#8a6a20' },
-    { yes: '#2f6b78', no: '#a94f35' }
-  ];
-  const img = document.getElementById('catImage');
-  const yes = document.getElementById('yes');
   let step = 0;
+  const img = document.getElementById('catImage');
 
-  img.addEventListener('error', () => {
-    img.hidden = true;
-    setStatus('status', 'Không tải được ảnh, nhưng câu hỏi vẫn ở đây.');
-  });
-
+  img.addEventListener('error', () => { img.hidden = true; });
   document.getElementById('yes').addEventListener('click', () => {
     save('consent', 'Vâng');
-    go('pages/thanks.html');
+    go('thanks.html');
   });
-
   document.getElementById('no').addEventListener('click', () => {
     step += 1;
     img.src = images[(step - 1) % images.length];
-    const color = colors[step % colors.length];
-    yes.style.background = color.yes;
-    document.getElementById('no').style.borderColor = color.no;
     setStatus('status', 'Vẫn còn chỗ cho một câu trả lời khác.');
     if (step === 1) {
       save('consent', 'Không Nha');
