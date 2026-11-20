@@ -2,62 +2,39 @@
 
 ## Trạng thái hiện tại
 
-- FE: `https://inviteflow-fe.onrender.com` (Render static site, live).
-- API: `https://minneapolis-exhibits-hip-relates.trycloudflare.com` (Cloudflare quick tunnel tới Rust chạy local, DB GitHub).
-- DB: `th-ming/inviteflow-db/responses.json`.
-- Domain `motloimoi.cc.cd` đã thêm vào Render nhưng chưa verify — cần CNAME `motloimoi` → `inviteflow-fe.onrender.com` tại DNS Stackryze. Quick tunnel đổi URL khi restart; cần account/tunnel có tên để cố định.
+- **FE**: Render static site `inviteflow-fe` → `https://inviteflow-fe.onrender.com`.
+- **Domain chính**: `https://motloimoi.cc.cd` — đã verify trong Render, CNAME `@` → `inviteflow-fe.onrender.com` khai trong DNSHE.
+- **API**: Cloudflare quick tunnel `https://minneapolis-exhibits-hip-relates.trycloudflare.com` → Rust chạy local cổng 8787.
+- **DB**: GitHub repo `th-ming/inviteflow-db`, file `responses.json` (GitHub Contents API).
+- **Admin**: `https://motloimoi.cc.cd/pages/admin.html`, token mặc định `inviteflow-admin-2026`.
 
-## FE — Firebase Hosting
+Quick tunnel đổi URL khi restart. Muốn cố định cần named tunnel (Cloudflare account) hoặc host BE có domain riêng.
 
-1. Tạo project Firebase id `YOUR_PROJECT` (6–30 ký tự), chọn gói **Spark**.
-2. Bật Hosting, giữ `firebase.json` như cũ (`public: frontend/public`).
-3. `firebase deploy --only hosting` → site chạy tại `https://YOUR_PROJECT.web.app`.
-4. Domain đã chọn: **https://motloimoi.cc.cd** (đuôi `.indevs.in` từ Stackryze — free managed domain, repo `stackryze/FreeDomains`). Thêm domain này trong Firebase Hosting, lấy bản ghi A/TXT Firebase rồi khai ở DNS Stackryze; HTTPS do Firebase cấp.
-5. Nếu chưa kịp gắn domain tùy chỉnh, Firebase vẫn có `https://<project>.web.app` làm địa chỉ dự phòng.
+## DNSHE
 
-Kiểm tra thực tế từ bảng giá chính thức: Spark **“No payment method needed”**, Hosting 10 GB storage + 360 MB/day transfer, Realtime Database 1 GB lưu + 100 kết nối + ~10 GB/tháng. Dùng trong hạn mức này thì không phát sinh tiền.
+API: `https://api005.dnshe.com/index.php?m=domain_hub`, auth qua header `X-API-Key` / `X-API-Secret`.
 
-## BE — Leapcell
+- Domain: `motloimoi.cc.cd`, `subdomain_id = 6982875840`.
+- Record: `CNAME @ → inviteflow-fe.onrender.com`, TTL 600, `record_id = 783802758711327`.
+- Credential nằm trong `D:\creds-REXI.md`, không đưa vào repo.
 
-Runtime: Rust. Khai trong Service Settings:
-
-| Field | Value |
-|---|---|
-| Root Directory | `backend` |
-| Build Command | `cargo build --release` |
-| Start Command | `./target/release/inviteflow-api` |
-| Port | 8080 |
-
-Biến môi trường lấy từ `.env.example`: `ADMIN_TOKEN`, `DB_DRIVER=firebase`, `DATABASE_URL` (bắt buộc — server từ chối khởi động nếu còn giá trị mẫu), `DATABASE_PATH`, `ALLOWED_ORIGIN=https://YOUR_PROJECT.web.app`, `RATE_LIMIT`.
-
-FE gọi API qua `window.API_BASE` trong từng trang — phải thay `YOUR_API_HOST` bằng domain Leapcell sau khi deploy BE, nếu không request sẽ đi về Firebase Hosting và trả 404.
-
-Health check: `GET /api/health`. Deploy tự động khi push vào branch đã liên kết.
-
-## DB — Firebase Realtime Database
-
-Tạo database trên Spark, cấu hình node `responses`. Không đưa service account vào repo; nếu dùng Admin SDK thì khai trong secret của host.
-
-## GitHub Actions
-
-- `deploy-fe.yml`: deploy FE khi push vào `main`. Cần secret `FIREBASE_TOKEN`.
-- `keep-alive.yml`: cron 5 phút gọi `GET /api/health`. Cần secret `API_BASE` (domain Leapcell).
-
-## Keep-alive
-
-Nếu muốn tránh cold start, dùng workflow `keep-alive.yml`, UptimeRobot hoặc cron-job.org gọi `GET /api/health` mỗi 5–10 phút. Ngân sách 100k invocation/tháng của Leapcell đủ cho việc này.
-
-## Thay placeholder
-
-Domain FE đã ghi: `motloimoi.cc.cd`. Còn lại `YOUR_API_HOST` trong 8 trang — sau khi deploy BE:
+## Build
 
 ```
-powershell -File scripts/set-domain.ps1 -ApiBase https://<app>.leapcell.dev
+powershell -File scripts/build.ps1
 ```
 
-Script cũng nhận `-Domain https://ten-mien` (tự bỏ `https://` thừa) và `-Project <id>` nếu cần đổi lại. Cập nhật `ALLOWED_ORIGIN` trong `.env` khi chạy.
+Yêu cầu toolchain GNU + MinGW tại `D:\Tools\mingw` (đã cấu hình trong `backend/.cargo/config.toml`).
 
-## Kiểm tra free
+## Đổi domain
 
-- Firebase Spark: bảng giá chính thức ghi rõ “No payment method needed”. Hosting + RTDB nằm trong hạn mức ở trên.
-- Leapcell: catalog độc lập ghi free, không thẻ, 20 project / 100k invocation / 3 GB-giờ / 2 GB transfer; trang pricing chính thức trả 502 lúc kiểm tra — cần xác nhận lại trong lúc đăng ký.
+```
+powershell -File scripts/set-domain.ps1 -Domain https://ten-mien-moi
+```
+
+Script cập nhật robots, sitemap, og:image/canonical và `ALLOWED_ORIGIN`. Nhớ cập nhật lại biến môi trường `ALLOWED_ORIGIN` của API và custom domain trong Render.
+
+## Lịch sử
+
+- Firebase Hosting / Leapcell / Stackryze `.indevs.in` đã bị bỏ vì thiếu tài khoản hoặc KYC.
+- DNSHE được chọn vì có API key hợp lệ, đăng ký domain không cần KYC GitHub.
