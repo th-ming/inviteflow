@@ -74,7 +74,6 @@
   import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
   import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
   import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-  import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
   import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
   import { hearts } from './assets/js/app.js';
 
@@ -83,6 +82,7 @@
   setTimeout(() => hearts(24), 300);
 
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf7eae3);
   scene.fog = new THREE.Fog(0xf7eae3, 7, 15);
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
@@ -103,9 +103,6 @@
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const aoPass = new GTAOPass(scene, camera, 1, 1);
-  aoPass.blendIntensity = 0.8;
-  composer.addPass(aoPass);
   const bokehPass = new BokehPass(scene, camera, { focus: 4.0, aperture: 0.00016, maxblur: 0.012 });
   composer.addPass(bokehPass);
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.1, 0.6, 0.94);
