@@ -51,7 +51,7 @@
 .stat-value {
   display: block;
   margin-top: 4px;
-  font: 500 32px/1.2 Georgia, "Times New Roman", serif;
+  font: 600 32px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -72,7 +72,7 @@
   margin-bottom: 16px;
 }
 
-h2 { margin: 0; font: 500 18px/1.4 Georgia, "Times New Roman", serif; }
+h2 { margin: 0; font: 600 18px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
 
 .empty {
   margin: 0;
