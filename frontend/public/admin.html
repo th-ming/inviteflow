@@ -423,8 +423,13 @@
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || `Lỗi ${response.status}`);
-    (remember ? localStorage : sessionStorage).setItem('adminToken', body.token);
-    (remember ? sessionStorage : localStorage).removeItem('adminToken');
+    if (remember) {
+      sessionStorage.removeItem('adminToken');
+      localStorage.setItem('adminToken', body.token);
+    } else {
+      localStorage.removeItem('adminToken');
+      sessionStorage.setItem('adminToken', body.token);
+    }
   }
 
   byId('loginBtn').addEventListener('click', async () => {
