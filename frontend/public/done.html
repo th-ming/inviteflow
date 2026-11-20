@@ -72,6 +72,9 @@
 
 <script type="module">
   import * as THREE from 'three';
+  import { read, hearts } from './assets/js/app.js';
+
+  if (read('consent') === 'Vâng') hearts(18);
 
   const host = document.getElementById('scene3d');
   if (!host) throw new Error('scene host missing');
@@ -89,13 +92,15 @@
   renderer.toneMappingExposure = 1.05;
   host.appendChild(renderer.domElement);
 
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   scene.add(new THREE.HemisphereLight(0xfff1e0, 0x7a7168, 1.8));
   const sun = new THREE.DirectionalLight(0xffd9b3, 2.6);
   sun.position.set(3, 5, 4);
   scene.add(sun);
 
   const flower = new THREE.Group();
-  flower.scale.setScalar(1.25);
+  flower.scale.setScalar(1.1);
+  flower.position.y = 0.15;
   scene.add(flower);
 
   const stem = new THREE.Mesh(
@@ -118,10 +123,12 @@
   flower.add(leafRight);
 
   const petalMat = new THREE.MeshStandardMaterial({
-    color: 0xf3cfc2, roughness: 0.55, side: THREE.DoubleSide
+    color: 0xffd9c9, roughness: 0.45, side: THREE.DoubleSide,
+    emissive: 0xf3cfc2, emissiveIntensity: 0.3
   });
   const petalMatAlt = new THREE.MeshStandardMaterial({
-    color: 0xefc1ad, roughness: 0.55, side: THREE.DoubleSide
+    color: 0xf8c9b4, roughness: 0.45, side: THREE.DoubleSide,
+    emissive: 0xefc1ad, emissiveIntensity: 0.3
   });
   const petalGeo = new THREE.SphereGeometry(0.5, 18, 12);
   const petals = [];
