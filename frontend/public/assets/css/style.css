@@ -139,13 +139,14 @@ h1 {
 }
 
 .heart-field { position: fixed; inset: 0; z-index: 20; pointer-events: none; overflow: hidden; }
-.heart { position: absolute; width: 18px; height: 18px; color: var(--accent); animation: float-up 2000ms var(--ease) forwards; }
+.heart { position: absolute; top: -24px; width: 18px; height: 18px; color: var(--accent); opacity: 0; animation: fall 3200ms linear forwards; }
 .heart svg { width: 100%; height: 100%; display: block; }
 
-@keyframes float-up {
-  from { opacity: 0; transform: translateY(0) scale(0.8); }
-  20% { opacity: 1; }
-  to { opacity: 0; transform: translateY(-180px) scale(1.2); }
+@keyframes fall {
+  0% { opacity: 0; transform: translate3d(0, -6vh, 0) scale(0.7) rotate(0deg); }
+  8% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--drift, 0px), 108vh, 0) scale(1.15) rotate(var(--spin, 40deg)); }
 }
 
 .scene3d {

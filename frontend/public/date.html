@@ -6,6 +6,7 @@
 <title>Chọn ngày hẹn</title>
 <meta name="description" content="Chọn một ngày để cả hai cùng rảnh.">
 <meta property="og:title" content="Một lời mời">
+<meta property="og:description" content="Chọn một ngày để cả hai cùng rảnh.">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/date.html">
 <link rel="icon" type="image/png" href="assets/img/favicon.png">
@@ -34,30 +35,40 @@
           <button type="button" class="btn btn-primary" id="pick">Chọn</button>
           <button type="button" class="btn" id="cancel">Hủy</button>
         </div>
-        <p class="status" id="status"></p>
-        <div class="actions" id="nextWrap" hidden><button type="button" class="btn" id="next">Tiếp</button></div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <div class="actions" id="nextWrap" hidden><button type="button" class="btn btn-primary" id="next">Tiếp</button></div>
       </section>
     </main>
   </div>
 </div>
 <script type="module">
-  import { save, go, formatDay, reveal, setStatus, toast, loadContent } from './assets/js/app.js';
+  import { save, read, go, formatDay, reveal, setStatus, toast, loadContent } from './assets/js/app.js';
   const input = document.getElementById('datepicker');
+  const nextWrap = document.getElementById('nextWrap');
+  const now = new Date();
+  input.min = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const saved = read('freeDay');
+  if (saved) {
+    input.value = saved;
+    setStatus('status', `Bạn chọn ngày: ${formatDay(saved)}`);
+    nextWrap.hidden = false;
+  }
   document.getElementById('pick').addEventListener('click', () => {
     if (!input.value) {
       setStatus('status', 'Vui lòng chọn ngày');
-      document.getElementById('nextWrap').hidden = true;
+      nextWrap.hidden = true;
       return;
     }
     save('freeDay', input.value);
     setStatus('status', `Bạn chọn ngày: ${formatDay(input.value)}`);
-    setTimeout(() => toast('Một buổi hẹn tuyệt vời sẽ đến!'), 500);
+    toast('Một buổi hẹn tuyệt vời sẽ đến!');
     reveal('nextWrap');
   });
   document.getElementById('cancel').addEventListener('click', () => {
     input.value = '';
+    nextWrap.hidden = true;
+    localStorage.removeItem('freeDay');
     setStatus('status', 'Đã hủy chọn ngày');
-    document.getElementById('nextWrap').hidden = true;
   });
   document.getElementById('next').addEventListener('click', () => go('food.html'));
 

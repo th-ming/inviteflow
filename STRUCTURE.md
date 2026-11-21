@@ -55,6 +55,16 @@ inviteflow/
 FE (Render static) -> API (Render Rust web service) -> GitHub JSON DB (responses.json + content.json + admin.json)
 ```
 
+## Hành vi luồng FE (cập nhật 21/11/2026)
+
+- `index.html` — nút “Không Nha” trốn khi rê/bấm (cố tình, giữ nguyên); “Vâng” → `thanks.html`.
+- `thanks.html` — spam nút ~0.9s → mưa tim rơi → sau 3.6s sang `date.html`.
+- `date.html` — pick ngày lưu `freeDay` (giữ qua reload, `min` = hôm nay local); Hủy xóa state; xong hiện nút Tiếp và tự cuộn tới.
+- `food/drink/place.html` — chọn 1 lựa chọn → hiện status/toast + nút Tiếp/Xong rồi tự cuộn tới (`reveal()` trong `app.js`).
+- `done.html` — gửi `/api/responses` **1 lần** khi consent = Vâng (flag `inviteSubmitted` chỉ set sau khi API trả 200); lỗi giữ thông báo lỗi, không báo giả. Fallback 3D→2D sau 14s nếu WebGL không khởi động.
+- `admin.html` — filter search + status chồng được (`applyFilters`); CSV append vào DOM trước khi click; biểu đồ ngày theo local time.
+- `reveal()` tự cuộn có tôn trọng `prefers-reduced-motion`.
+
 Admin `/api/content` (GET public, PUT cần token editor/admin), `/api/responses` (GET public, POST public, PATCH/DELETE cần token), `/api/export` + `/api/restore` (cần token).
 
 ## Đổi tên miền

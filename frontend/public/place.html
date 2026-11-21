@@ -6,6 +6,7 @@
 <title>Chọn nơi đi chơi</title>
 <meta name="description" content="Chọn nơi đi chơi cho buổi hẹn.">
 <meta property="og:title" content="Một lời mời">
+<meta property="og:description" content="Chọn nơi đi chơi cho buổi hẹn.">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/place.html">
 <link rel="icon" type="image/png" href="assets/img/favicon.png">
@@ -28,8 +29,8 @@
         <h1 id="placeTitle">Xong em muốn đi chơi đâu nữa nà?</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <div class="choice-grid" id="choices"></div>
-        <p class="status" id="status"></p>
-        <div class="actions" id="nextWrap" hidden><button type="button" class="btn btn-primary" id="next">Tiếp</button></div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <div class="actions" id="nextWrap" hidden><button type="button" class="btn btn-primary" id="next">Xong</button></div>
       </section>
     </main>
   </div>

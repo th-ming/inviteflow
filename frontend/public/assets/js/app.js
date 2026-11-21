@@ -108,7 +108,14 @@ export function setStatus(id, text) {
 
 export function reveal(id) {
   const node = byId(id);
-  if (node) node.hidden = false;
+  if (!node) return;
+  node.hidden = false;
+  requestAnimationFrame(() => {
+    const rect = node.getBoundingClientRect();
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    node.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  });
 }
 
 export function toast(message) {
@@ -119,7 +126,7 @@ export function toast(message) {
   setTimeout(() => node.remove(), 2400);
 }
 
-export function hearts(count = 15) {
+export function hearts(count = 54) {
   const field = document.createElement('div');
   field.className = 'heart-field';
   document.body.appendChild(field);
@@ -127,12 +134,16 @@ export function hearts(count = 15) {
     const heart = document.createElement('div');
     heart.className = 'heart';
     heart.style.left = `${Math.random() * 100}%`;
-    heart.style.top = `${60 + Math.random() * 35}%`;
-    heart.style.animationDelay = `${Math.random() * 400}ms`;
+    const size = 14 + Math.random() * 16;
+    heart.style.width = `${size}px`;
+    heart.style.height = `${size}px`;
+    heart.style.animationDuration = `${2800 + Math.random() * 1400}ms`;
+    heart.style.animationDelay = `${(i / count) * 2400 + Math.random() * 240}ms`;
+    heart.style.setProperty('--drift', `${(Math.random() - 0.5) * 120}px`);
     heart.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-9-5.7-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.3-9 11-9 11z"/></svg>';
     field.appendChild(heart);
   }
-  setTimeout(() => field.remove(), 2600);
+  setTimeout(() => field.remove(), 6600);
 }
 
 export function renderChoices(items, containerId, key, onPick) {

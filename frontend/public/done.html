@@ -399,7 +399,6 @@ if (consented) {
   var submitted = false;
   try { submitted = !!sessionStorage.getItem('inviteSubmitted'); } catch (e) {}
   if (!submitted) {
-    try { sessionStorage.setItem('inviteSubmitted', '1'); } catch (e) {}
     var apiBase = String(window.API_BASE || '').replace(/\/$/, '');
     if (apiBase && typeof fetch === 'function') {
       fetch(apiBase + '/api/responses', {
@@ -408,12 +407,15 @@ if (consented) {
         body: JSON.stringify({ consent: 'Vâng', freeDay: dayVal, food: read('food'), drink: read('drink'), place: read('place') })
       }).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        try { sessionStorage.setItem('inviteSubmitted', '1'); } catch (e) {}
         markDone();
       }).catch(function () {
         markFail();
-        setTimeout(markDone, 2600);
       });
-    } else { markDone(); }
+    } else {
+      try { sessionStorage.setItem('inviteSubmitted', '1'); } catch (e) {}
+      markDone();
+    }
   } else { markDone(); }
 } else { markNone(); }
 
@@ -476,6 +478,8 @@ if (consented) {
     document.body.appendChild(g);
   }
   function failBoot(msg) {
+    if (window.__bootOK) return;
+    window.__bootOK = true;
     var sp = document.getElementById('bootSplash');
     if (sp) sp.remove();
     var canvas2 = byId('stage3d');
@@ -490,11 +494,11 @@ if (consented) {
     if (window.__bootOK) return;
     var sp = document.getElementById('bootSplash');
     if (sp) sp.innerHTML = 'Vườn hoa đang nở chậm hơn thường ngày&hellip;<br><span style="font-size:13px;opacity:.72">Vài giây nữa em chuyển sang bản xem nhẹ nếu máy chưa đáp ứng được.</span>';
-  }, 30000);
+  }, 8000);
   setTimeout(function () {
     if (window.__bootOK) return;
     failBoot('Máy này chưa khởi động được khung 3D — đã chuyển sang <b>vườn hoa 2D dự phòng</b> để không bỏ lỡ lời mời.');
-  }, 60000);
+  }, 14000);
   var canvas = byId('stage3d');
   var renderer;
   try {
