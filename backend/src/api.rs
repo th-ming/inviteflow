@@ -69,10 +69,10 @@ fn default_content() -> Value {
             "title": "Làm người yêu anh nhé?",
             "lead": "Mình cùng nhau đi chơi nha. Một buổi chiều, một ly nước, và một câu hỏi.",
             "images": [
-                "https://i.pinimg.com/originals/54/22/99/54229922820d7c505a7ab53d783b310b.gif",
-                "https://i.pinimg.com/originals/44/06/b8/4406b868368695db27f93d9780e67f6b.gif",
-                "https://i.pinimg.com/736x/a1/9c/1a/a19c1a969a8a82f5cde6a7848feaa807.jpg",
-                "https://i.pinimg.com/736x/b8/d1/ae/b8d1ae6b9861b6e625b95e3b89bf9313.jpg"
+                "/assets/img/content/54229922820d7c505a7ab53d783b310b.gif",
+                "/assets/img/content/4406b868368695db27f93d9780e67f6b.gif",
+                "/assets/img/content/a19c1a969a8a82f5cde6a7848feaa807.jpg",
+                "/assets/img/content/b8d1ae6b9861b6e625b95e3b89bf9313.jpg"
             ]
         },
         "thanks": {
@@ -87,36 +87,36 @@ fn default_content() -> Value {
         "food": {
             "title": "Em muốn ăn món gì?",
             "items": [
-                item("Cơm", "https://i.pinimg.com/736x/ac/f2/14/acf21487e6638097f8e8922b153c1ffa.jpg", "Một Cơm sẽ được phục vụ", false),
-                item("Bún Bò", "https://i.pinimg.com/736x/f4/41/e4/f441e4d163c5cc83ce64f29098ad34fa.jpg", "Một Bún Bò sẽ được phục vụ", false),
-                item("Phở Cuốn", "https://i.pinimg.com/736x/6e/06/fe/6e06fe0a41b99505ebd6eec9175251f8.jpg", "Một Phở Cuốn sẽ được phục vụ", false),
-                item("Nem Nướng", "https://i.pinimg.com/736x/dc/c9/c2/dcc9c227c62d5146b7f4785d5788dc35.jpg", "Một Nem Nướng sẽ được phục vụ", false),
-                item("Bún Cá", "https://i.pinimg.com/736x/b8/ae/1e/b8ae1e54f6f0a340c9ab911c55983f07.jpg", "Một Bún Cá sẽ được phục vụ", false),
-                item("Mì Cay", "https://i.pinimg.com/736x/4e/a7/c2/4ea7c29e0afdbed1ac53d914a617a7fc.jpg", "Một Mì Cay sẽ được phục vụ", false),
-                item("Ăn Gì Cũng Được", "https://i.pinimg.com/736x/15/c5/36/15c536783014eb6fa4bbc953021b3eb6.jpg", "Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè", true)
+                item("Cơm", "/assets/img/content/acf21487e6638097f8e8922b153c1ffa.jpg", "Một Cơm sẽ được phục vụ", false),
+                item("Bún Bò", "/assets/img/content/f441e4d163c5cc83ce64f29098ad34fa.jpg", "Một Bún Bò sẽ được phục vụ", false),
+                item("Phở Cuốn", "/assets/img/content/6e06fe0a41b99505ebd6eec9175251f8.jpg", "Một Phở Cuốn sẽ được phục vụ", false),
+                item("Nem Nướng", "/assets/img/content/dcc9c227c62d5146b7f4785d5788dc35.jpg", "Một Nem Nướng sẽ được phục vụ", false),
+                item("Bún Cá", "/assets/img/content/b8ae1e54f6f0a340c9ab911c55983f07.jpg", "Một Bún Cá sẽ được phục vụ", false),
+                item("Mì Cay", "/assets/img/content/4ea7c29e0afdbed1ac53d914a617a7fc.jpg", "Một Mì Cay sẽ được phục vụ", false),
+                item("Ăn Gì Cũng Được", "/assets/img/content/15c536783014eb6fa4bbc953021b3eb6.jpg", "Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè", true)
             ]
         },
         "drink": {
             "title": "Em muốn uống gì?",
             "items": [
-                item("Trà Sữa", "https://i.pinimg.com/736x/87/2a/09/872a0953896df1c6e757fd54b845da23.jpg", "Một ly Trà Sữa tuyệt vời sắp được phục vụ", false),
-                item("Cafe Sữa Đá", "https://i.pinimg.com/736x/1f/c8/72/1fc872840630055919672fce03723af9.jpg", "Một ly Cafe Sữa Đá tuyệt vời sắp được phục vụ", false),
-                item("Nước Ép Cam", "https://i.pinimg.com/736x/3b/5c/fc/3b5cfc41457081509f53f280020e6cd9.jpg", "Một ly Nước Ép Cam tuyệt vời sắp được phục vụ", false),
-                item("Sinh Tố Bơ", "https://i.pinimg.com/736x/00/d4/29/00d4296dc338a1b18c6d15ba68d9d0d3.jpg", "Một ly Sinh Tố Bơ tuyệt vời sắp được phục vụ", false),
-                item("Nước Dừa", "https://i.pinimg.com/736x/f7/46/76/f74676e64d0ccd46daf08d419c0fbe5d.jpg", "Một ly Nước Dừa tuyệt vời sắp được phục vụ", false),
-                item("Trà Chanh", "https://i.pinimg.com/736x/c6/4d/26/c64d26e91c7c1a09916bcc3223da561b.jpg", "Một ly Trà Chanh tuyệt vời sắp được phục vụ", false),
-                item("Uống Gì Cũng Được", "https://i.pinimg.com/736x/6f/36/c8/6f36c874861a46b8e4208454157a1d6b.jpg", "Cho em chọn nhé :33", true)
+                item("Trà Sữa", "/assets/img/content/872a0953896df1c6e757fd54b845da23.jpg", "Một ly Trà Sữa tuyệt vời sắp được phục vụ", false),
+                item("Cafe Sữa Đá", "/assets/img/content/1fc872840630055919672fce03723af9.jpg", "Một ly Cafe Sữa Đá tuyệt vời sắp được phục vụ", false),
+                item("Nước Ép Cam", "/assets/img/content/3b5cfc41457081509f53f280020e6cd9.jpg", "Một ly Nước Ép Cam tuyệt vời sắp được phục vụ", false),
+                item("Sinh Tố Bơ", "/assets/img/content/00d4296dc338a1b18c6d15ba68d9d0d3.jpg", "Một ly Sinh Tố Bơ tuyệt vời sắp được phục vụ", false),
+                item("Nước Dừa", "/assets/img/content/f74676e64d0ccd46daf08d419c0fbe5d.jpg", "Một ly Nước Dừa tuyệt vời sắp được phục vụ", false),
+                item("Trà Chanh", "/assets/img/content/c64d26e91c7c1a09916bcc3223da561b.jpg", "Một ly Trà Chanh tuyệt vời sắp được phục vụ", false),
+                item("Uống Gì Cũng Được", "/assets/img/content/6f36c874861a46b8e4208454157a1d6b.jpg", "Cho em chọn nhé :33", true)
             ]
         },
         "place": {
             "title": "Xong em muốn đi chơi đâu nữa nà?",
             "items": [
-                item("Công Viên", "https://i.pinimg.com/736x/c9/64/58/c9645891fc4c84d400a93c00c8dc42a2.jpg", "Một buổi đi chơi Công Viên thật tuyệt vời nhé", false),
-                item("Rạp Phim", "https://i.pinimg.com/736x/1f/5e/cc/1f5ecca4b80819393a320a95d14c51d0.jpg", "Một buổi đi chơi Rạp Phim thật tuyệt vời nhé", false),
-                item("Quán Cafe", "https://i.pinimg.com/736x/c7/b8/fc/c7b8fcfc09f0c709458ba1e657405c15.jpg", "Một buổi đi chơi Quán Cafe thật tuyệt vời nhé", false),
-                item("Nhà Ma", "https://dulich9.com/wp-content/uploads/2024/01/Dia-chi-cac-nha-ma-o-Ha-Noi-03.webp", "Một buổi đi chơi Nhà Ma thật tuyệt vời nhé", false),
-                item("Dạo Quanh VNUA", "https://www.vnua.edu.vn/DATA/0/IMAGES/2017/07/hocvien/2017-2707hocvien004.JPG", "Một buổi đi chơi Dạo Quanh VNUA thật tuyệt vời nhé", false),
-                item("Nơi Có Chúng Ta", "https://i.pinimg.com/736x/b6/08/3c/b6083cc8a66ab145ec71efce64ad96b2.jpg", "Đi đâu miễn đi cùng em là được", true)
+                item("Công Viên", "/assets/img/content/c9645891fc4c84d400a93c00c8dc42a2.jpg", "Một buổi đi chơi Công Viên thật tuyệt vời nhé", false),
+                item("Rạp Phim", "/assets/img/content/1f5ecca4b80819393a320a95d14c51d0.jpg", "Một buổi đi chơi Rạp Phim thật tuyệt vời nhé", false),
+                item("Quán Cafe", "/assets/img/content/c7b8fcfc09f0c709458ba1e657405c15.jpg", "Một buổi đi chơi Quán Cafe thật tuyệt vời nhé", false),
+                item("Nhà Ma", "/assets/img/content/dia-chi-cac-nha-ma-o-ha-noi-03.webp", "Một buổi đi chơi Nhà Ma thật tuyệt vời nhé", false),
+                item("Dạo Quanh VNUA", "/assets/img/content/2017-2707hocvien004.jpg", "Một buổi đi chơi Dạo Quanh VNUA thật tuyệt vời nhé", false),
+                item("Nơi Có Chúng Ta", "/assets/img/content/b6083cc8a66ab145ec71efce64ad96b2.jpg", "Đi đâu miễn đi cùng em là được", true)
             ]
         },
         "done": {
@@ -127,7 +127,20 @@ fn default_content() -> Value {
 }
 
 fn valid_url(value: &str) -> bool {
-    value.starts_with("https://") || value.starts_with("http://") || value.is_empty()
+    value.starts_with("https://")
+        || value.starts_with("http://")
+        || value.starts_with('/')
+        || value.is_empty()
+}
+
+fn valid_image(value: &str) -> bool {
+    if value.len() > 2_000_000 {
+        return false;
+    }
+    if let Some(rest) = value.strip_prefix("data:image/") {
+        return rest.contains(";base64,");
+    }
+    valid_url(value) && value.len() <= 500
 }
 
 fn validate_content(value: &Value) -> Result<(), String> {
@@ -161,7 +174,7 @@ fn validate_content(value: &Value) -> Result<(), String> {
             }
             for image in images {
                 let image = image.as_str().ok_or("image phải là chuỗi")?;
-                if image.len() > 500 || !valid_url(image) {
+                if !valid_image(image) {
                     return Err("image không hợp lệ".into());
                 }
             }
@@ -193,7 +206,7 @@ fn validate_content(value: &Value) -> Result<(), String> {
                     return Err("tên lựa chọn không hợp lệ".into());
                 }
                 let image = entry.get("image").and_then(|v| v.as_str()).unwrap_or("");
-                if image.len() > 500 || !valid_url(image) {
+                if !valid_image(image) {
                     return Err("ảnh lựa chọn không hợp lệ".into());
                 }
                 let message = entry.get("message").and_then(|v| v.as_str()).unwrap_or("");
@@ -717,6 +730,15 @@ mod tests {
             GithubDb::new("th-ming/inviteflow-db", "admin.json", ""),
             GithubDb::new("th-ming/inviteflow-db", "content.json", ""),
         )
+    }
+
+    #[test]
+    fn images_accept_local_and_data() {
+        assert!(valid_image("/assets/img/content/a.jpg"));
+        assert!(valid_image("data:image/png;base64,AAAA"));
+        assert!(valid_image("https://example.com/a.jpg"));
+        assert!(!valid_image("ftp://example.com/a.jpg"));
+        assert!(!valid_image(&"a".repeat(2_000_001)));
     }
 
     #[tokio::test]
