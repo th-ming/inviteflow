@@ -33,7 +33,10 @@
         </div>
         <p class="status" id="status"></p>
       </div>
-      <img id="catImage" class="hero-img" src="/assets/img/content/47429e058b9834c5d27d8faf0d96c2c6.gif" alt="Mèo con">
+      <div class="hero-stack">
+        <img id="catImage" class="hero-img" src="/assets/img/content/47429e058b9834c5d27d8faf0d96c2c6.gif" alt="Mèo con">
+        <img id="catImageNext" class="hero-img hero-img-overlay" alt="" aria-hidden="true">
+      </div>
     </div>
   </main>
 </div>
@@ -57,11 +60,23 @@
   let words = ['Không Nha', 'Bấm đi mà', 'Đừng ngại', 'Thử lại nha', 'Bắt được không'];
   const panel = document.querySelector('.panel');
   const img = document.getElementById('catImage');
+  const imgNext = document.getElementById('catImageNext');
   const no = document.getElementById('no');
   let step = 0;
   let resetTimer;
+  let swapTimer;
 
   img.addEventListener('error', () => { img.hidden = true; });
+  function crossfade(src) {
+    if (!src || src === img.src) return;
+    clearTimeout(swapTimer);
+    imgNext.src = src;
+    imgNext.classList.add('show');
+    swapTimer = setTimeout(() => {
+      img.src = src;
+      imgNext.classList.remove('show');
+    }, 180);
+  }
 
   document.getElementById('yes').addEventListener('click', () => {
     save('consent', 'Vâng');
@@ -70,7 +85,7 @@
 
   function dodge() {
     step += 1;
-    img.src = images[(step - 1) % images.length];
+    crossfade(images[step % images.length]);
     panel.style.setProperty('--accent', colors[step % colors.length]);
     const pair = colorSets[step % colorSets.length];
     document.getElementById('yes').style.background = pair[0];
@@ -83,7 +98,10 @@
     const maxX = area.right - 24 - button.width - baseX;
     const dx = minX < maxX ? minX + Math.random() * (maxX - minX) : 0;
     const dy = (Math.random() * 2 - 1) * 120;
-    no.style.transform = `translate(${dx}px, ${dy}px)`;
+    const rot = (Math.random() * 2 - 1) * 12;
+    no.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.06)`;
+    no.classList.add('dodging');
+    setTimeout(() => no.classList.remove('dodging'), 260);
 
     no.textContent = words[step % words.length];
     clearTimeout(resetTimer);

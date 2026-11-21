@@ -123,7 +123,10 @@ export function toast(message) {
   node.className = 'toast';
   node.textContent = message;
   document.body.appendChild(node);
-  setTimeout(() => node.remove(), 2400);
+  setTimeout(() => {
+    node.classList.add('out');
+    setTimeout(() => node.remove(), 220);
+  }, 2400);
 }
 
 export function hearts(count = 54) {
@@ -140,7 +143,8 @@ export function hearts(count = 54) {
     heart.style.animationDuration = `${2800 + Math.random() * 1400}ms`;
     heart.style.animationDelay = `${(i / count) * 2400 + Math.random() * 240}ms`;
     heart.style.setProperty('--drift', `${(Math.random() - 0.5) * 120}px`);
-    heart.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-9-5.7-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.3-9 11-9 11z"/></svg>';
+    heart.style.setProperty('--sway', `${1200 + Math.random() * 900}ms`);
+    heart.innerHTML = '<span class="heart-inner"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-9-5.7-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.3-9 11-9 11z"/></svg></span>';
     field.appendChild(heart);
   }
   setTimeout(() => field.remove(), 6600);
@@ -150,7 +154,7 @@ export function renderChoices(items, containerId, key, onPick) {
   const container = byId(containerId);
   if (!container) return;
 
-  items.forEach((entry) => {
+  items.forEach((entry, index) => {
     const item = typeof entry === 'string' ? { name: entry } : entry;
     const label = item.name || '';
     const image = item.image || '';
@@ -158,6 +162,7 @@ export function renderChoices(items, containerId, key, onPick) {
     button.type = 'button';
     button.className = 'choice';
     button.setAttribute('aria-pressed', String(read(key) === label));
+    button.style.setProperty('--i', String(index));
 
     if (image) {
       const img = document.createElement('img');
@@ -173,13 +178,79 @@ export function renderChoices(items, containerId, key, onPick) {
     text.textContent = label;
     button.appendChild(text);
 
-    button.addEventListener('click', () => {
+    const check = document.createElement('span');
+    check.className = 'choice-check';
+    check.setAttribute('aria-hidden', 'true');
+    check.textContent = '✓';
+    button.appendChild(check);
+
+    button.addEventListener('click', (event) => {
       save(key, label);
       container.querySelectorAll('.choice').forEach((node) => {
         node.setAttribute('aria-pressed', String(node === button));
       });
+      const rect = button.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'choice-ripple';
+      ripple.style.left = `${(event.clientX || rect.left + rect.width / 2) - rect.left}px`;
+      ripple.style.top = `${(event.clientY || rect.top + rect.height / 2) - rect.top}px`;
+      button.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
       onPick({ ...item, name: label });
     });
     container.appendChild(button);
   });
 }
+
+function wireSecretAdmin() {
+  const brand = document.querySelector('.brand');
+  if (!brand || location.pathname.endsWith('admin.html')) return;
+  brand.tabIndex = 0;
+  brand.setAttribute('aria-label', 'Trang chủ');
+  let taps = 0;
+  let tapTimer;
+  let holdTimer;
+  let fired = false;
+
+  function fire() {
+    if (fired) return;
+    fired = true;
+    clearTimeout(tapTimer);
+    clearTimeout(holdTimer);
+    go('admin.html');
+  }
+  function press() {
+    if (fired) return;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(fire, 4000);
+    taps += 1;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { taps = 0; }, 2000);
+    if (taps >= 3) fire();
+  }
+  function release() {
+    clearTimeout(holdTimer);
+  }
+  function cancel() {
+    clearTimeout(holdTimer);
+  }
+
+  brand.addEventListener('pointerdown', press);
+  brand.addEventListener('pointerup', release);
+  brand.addEventListener('pointerleave', cancel);
+  brand.addEventListener('pointercancel', cancel);
+  brand.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      press();
+    }
+  });
+  brand.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      release();
+    }
+  });
+}
+
+wireSecretAdmin();

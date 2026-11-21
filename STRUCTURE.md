@@ -57,7 +57,11 @@ FE (Render static) -> API (Render Rust web service) -> GitHub JSON DB (responses
 
 ## Hành vi luồng FE (cập nhật 21/11/2026)
 
-- `index.html` — nút “Không Nha” trốn khi rê/bấm (cố tình, giữ nguyên); “Vâng” → `thanks.html`.
+- `index.html` — nút “Không Nha” trốn khi rê/bấm, kèm overshoot/xoay + ảnh mèo crossfade (cố tình, giữ nguyên ý đồ); “Vâng” → `thanks.html`.
+- Ẩn danh vào admin: bấm logo `.brand` 3 lần trong 2s, hoặc giữ logo 4s → `admin.html` (chỉ trang công khai, do `wireSecretAdmin()` trong `app.js`).
+- Lưới chọn món/nước/nơi: entrance stagger, hover nâng card + zoom ảnh, ripple + checkmark khi chọn.
+- Tim rơi (`thanks.html`): mưa tim + đung đưa riêng từng tim (lớp `.heart-inner`); toast mờ dần trước khi gỡ.
+- `admin.html` — số liệu count-up khi render, đường biểu đồ vẽ dần (`stroke-dashoffset`).
 - `thanks.html` — spam nút ~0.9s → mưa tim rơi → sau 3.6s sang `date.html`.
 - `date.html` — pick ngày lưu `freeDay` (giữ qua reload, `min` = hôm nay local); Hủy xóa state; xong hiện nút Tiếp và tự cuộn tới.
 - `food/drink/place.html` — chọn 1 lựa chọn → hiện status/toast + nút Tiếp/Xong rồi tự cuộn tới (`reveal()` trong `app.js`).
