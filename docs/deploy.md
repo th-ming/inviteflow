@@ -6,7 +6,7 @@
 - **Domain chính**: `https://motloimoi.cc.cd` — đã verify trong Render, CNAME `@` → `inviteflow-fe.onrender.com` khai trong DNSHE.
 - **API**: Render web service `inviteflow-api2` → `https://inviteflow-api2.onrender.com` (Rust native, build `cargo build --release`, start `./target/release/inviteflow-api`, rootDir `backend`).
 - **DB**: GitHub repo `th-ming/inviteflow-db`, file `responses.json` (GitHub Contents API).
-- **Admin**: `https://motloimoi.cc.cd/admin.html`. Token: `inviteflow-admin-2026` (admin), `inviteflow-editor-2026` (editor), `inviteflow-viewer-2026` (viewer).
+- **Admin**: `https://motloimoi.cc.cd/admin.html`. Token lấy trong `D:\creds-REXI.md`, không lưu trong repo.
 
 Không còn dùng quick tunnel. IP thật lấy từ header `cf-connecting-ip`, tra địa lý qua `ipwho.is`.
 
@@ -33,6 +33,15 @@ powershell -File scripts/set-domain.ps1 -Domain https://ten-mien-moi
 ```
 
 Script cập nhật robots, sitemap, og:image/canonical và `ALLOWED_ORIGIN`. Nhớ cập nhật lại biến môi trường `ALLOWED_ORIGIN` của API và custom domain trong Render.
+
+## Backup
+
+```
+$env:INVITEFLOW_ADMIN_TOKEN = '<token lấy từ D:\creds-REXI.md>'
+powershell -File scripts/backup.ps1
+```
+
+Script gọi `GET /api/export`, ghi một file JSON có timestamp vào `backups/` (nội dung + phản hồi). Đặt lịch Task Scheduler hằng ngày nếu cần tự động. Không lưu token trong repo hay script.
 
 ## Lịch sử
 

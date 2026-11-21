@@ -8,12 +8,13 @@
 <meta property="og:title" content="Một lời mời">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/place.html">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://inviteflow-api2.onrender.com';</script>
 </head>
 <body>
 <div class="app">
-  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Bước 4 / 4</span></header>
+  <header class="topbar"><span class="brand"><img src="assets/img/logo-micro.png" width="28" height="28" alt="">Inviteflow</span><span class="meta">Bước 4 / 4</span></header>
   <div class="layout">
     <nav class="rail" aria-label="Các bước">
       <div class="step done"><span class="num">01</span>Ngày</div>
@@ -24,7 +25,7 @@
     <main class="stage">
       <section class="panel">
         <p class="eyebrow">Địa điểm</p>
-        <h1>Xong em muốn đi chơi đâu nữa nà?</h1>
+        <h1 id="placeTitle">Xong em muốn đi chơi đâu nữa nà?</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <div class="choice-grid" id="choices"></div>
         <p class="status" id="status"></p>
@@ -34,24 +35,20 @@
   </div>
 </div>
 <script type="module">
-  import { renderChoices, reveal, setStatus, go, toast } from './assets/js/app.js';
-  const special = 'Nơi Có Chúng Ta';
-  renderChoices([
-    { name: 'Công Viên', image: 'https://i.pinimg.com/736x/c9/64/58/c9645891fc4c84d400a93c00c8dc42a2.jpg' },
-    { name: 'Rạp Phim', image: 'https://i.pinimg.com/736x/1f/5e/cc/1f5ecca4b80819393a320a95d14c51d0.jpg' },
-    { name: 'Quán Cafe', image: 'https://i.pinimg.com/736x/c7/b8/fc/c7b8fcfc09f0c709458ba1e657405c15.jpg' },
-    { name: 'Nhà Ma', image: 'https://dulich9.com/wp-content/uploads/2024/01/Dia-chi-cac-nha-ma-o-Ha-Noi-03.webp' },
-    { name: 'Dạo Quanh VNUA', image: 'https://www.vnua.edu.vn/DATA/0/IMAGES/2017/07/hocvien/2017-2707hocvien004.JPG' },
-    { name: special, image: 'https://i.pinimg.com/736x/b6/08/3c/b6083cc8a66ab145ec71efce64ad96b2.jpg' }
-  ], 'choices', 'place', (label) => {
-    setStatus('status', label === special
-      ? 'Đi đâu miễn đi cùng em là được 🥰'
-      : `Một buổi đi chơi ${label} thật tuyệt vời nhé`);
-    toast(label === special
-      ? 'Đi Đâu Miễn Đi Cùng Em Là Được 🥰'
-      : `Một buổi đi chơi ${label} thật tuyệt vời nhé!`);
-    reveal('nextWrap');
-  });
+  import { renderChoices, reveal, setStatus, go, toast, loadContent } from './assets/js/app.js';
+
+  function render(page) {
+    if (page.title) document.getElementById('placeTitle').textContent = page.title;
+    const items = Array.isArray(page.items) && page.items.length ? page.items : [];
+    renderChoices(items, 'choices', 'place', (item) => {
+      const message = item.message || `Một buổi đi chơi ${item.name} thật tuyệt vời nhé`;
+      setStatus('status', message);
+      toast(message);
+      reveal('nextWrap');
+    });
+  }
+
+  loadContent().then((content) => render(content.place || {}));
   document.getElementById('next').addEventListener('click', () => go('done.html'));
 </script>
 </body>

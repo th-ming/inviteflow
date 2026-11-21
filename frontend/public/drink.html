@@ -8,12 +8,13 @@
 <meta property="og:title" content="Một lời mời">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/drink.html">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://inviteflow-api2.onrender.com';</script>
 </head>
 <body>
 <div class="app">
-  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Bước 3 / 4</span></header>
+  <header class="topbar"><span class="brand"><img src="assets/img/logo-micro.png" width="28" height="28" alt="">Inviteflow</span><span class="meta">Bước 3 / 4</span></header>
   <div class="layout">
     <nav class="rail" aria-label="Các bước">
       <div class="step done"><span class="num">01</span>Ngày</div>
@@ -24,7 +25,7 @@
     <main class="stage">
       <section class="panel">
         <p class="eyebrow">Nước uống</p>
-        <h1>Em muốn uống gì?</h1>
+        <h1 id="drinkTitle">Em muốn uống gì?</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <div class="choice-grid" id="choices"></div>
         <p class="status" id="status"></p>
@@ -34,21 +35,20 @@
   </div>
 </div>
 <script type="module">
-  import { renderChoices, reveal, setStatus, go, toast } from './assets/js/app.js';
-  const special = 'Uống Gì Cũng Được';
-  renderChoices([
-    { name: 'Trà Sữa', image: 'https://i.pinimg.com/736x/87/2a/09/872a0953896df1c6e757fd54b845da23.jpg' },
-    { name: 'Cafe Sữa Đá', image: 'https://i.pinimg.com/736x/1f/c8/72/1fc872840630055919672fce03723af9.jpg' },
-    { name: 'Nước Ép Cam', image: 'https://i.pinimg.com/736x/3b/5c/fc/3b5cfc41457081509f53f280020e6cd9.jpg' },
-    { name: 'Sinh Tố Bơ', image: 'https://i.pinimg.com/736x/00/d4/29/00d4296dc338a1b18c6d15ba68d9d0d3.jpg' },
-    { name: 'Nước Dừa', image: 'https://i.pinimg.com/736x/f7/46/76/f74676e64d0ccd46daf08d419c0fbe5d.jpg' },
-    { name: 'Trà Chanh', image: 'https://i.pinimg.com/736x/c6/4d/26/c64d26e91c7c1a09916bcc3223da561b.jpg' },
-    { name: special, image: 'https://i.pinimg.com/736x/6f/36/c8/6f36c874861a46b8e4208454157a1d6b.jpg' }
-  ], 'choices', 'drink', (label) => {
-    setStatus('status', label === special ? 'Cho em chọn nhé :33' : `Một ly ${label} tuyệt vời sắp được phục vụ`);
-    toast(label === special ? 'Cho em chọn nha' : `Một ly ${label} tuyệt vời sắp được phục vụ!`);
-    reveal('nextWrap');
-  });
+  import { renderChoices, reveal, setStatus, go, toast, loadContent } from './assets/js/app.js';
+
+  function render(page) {
+    if (page.title) document.getElementById('drinkTitle').textContent = page.title;
+    const items = Array.isArray(page.items) && page.items.length ? page.items : [];
+    renderChoices(items, 'choices', 'drink', (item) => {
+      const message = item.message || `Một ly ${item.name} tuyệt vời sắp được phục vụ`;
+      setStatus('status', message);
+      toast(message);
+      reveal('nextWrap');
+    });
+  }
+
+  loadContent().then((content) => render(content.drink || {}));
   document.getElementById('next').addEventListener('click', () => go('place.html'));
 </script>
 </body>

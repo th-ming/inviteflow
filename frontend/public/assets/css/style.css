@@ -46,7 +46,8 @@ p, .lead { text-wrap: pretty; }
   border-bottom: 1px solid var(--line);
 }
 
-.brand { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.brand { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 8px; }
+.brand img { width: 28px; height: 28px; display: block; }
 .meta { color: var(--muted); font-size: 13px; }
 
 .layout {

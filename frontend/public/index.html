@@ -9,23 +9,24 @@
 <meta property="og:description" content="Một lời mời đi chơi, gửi riêng cho một người.">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://inviteflow-api2.onrender.com';</script>
 </head>
 <body>
 <div class="app">
   <header class="topbar">
-    <span class="brand">Inviteflow</span>
+    <span class="brand"><img src="assets/img/logo-micro.png" width="28" height="28" alt="">Inviteflow</span>
     <span class="meta">Một lời mời riêng</span>
   </header>
 
   <main class="panel" style="margin-top:48px">
     <div class="split">
       <div>
-        <p class="eyebrow">Một lời mời</p>
-        <h1>Làm người yêu anh nhé?</h1>
+        <p class="eyebrow" id="homeEyebrow">Một lời mời</p>
+        <h1 id="homeTitle">Làm người yêu anh nhé?</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <p class="lead">Mình cùng nhau đi chơi nha. Một buổi chiều, một ly nước, và một câu hỏi.</p>
+        <p class="lead" id="homeLead">Mình cùng nhau đi chơi nha. Một buổi chiều, một ly nước, và một câu hỏi.</p>
         <div class="actions">
           <button type="button" class="btn btn-primary" id="yes">Vâng</button>
           <button type="button" class="btn" id="no">Không Nha</button>
@@ -37,10 +38,10 @@
   </main>
 </div>
 <script type="module">
-  import { save, go, setStatus } from './assets/js/app.js';
+  import { save, go, setStatus, loadContent } from './assets/js/app.js';
   import { postResponse } from './assets/js/api.js';
 
-  const images = [
+  let images = [
     'https://i.pinimg.com/originals/54/22/99/54229922820d7c505a7ab53d783b310b.gif',
     'https://i.pinimg.com/originals/44/06/b8/4406b868368695db27f93d9780e67f6b.gif',
     'https://i.pinimg.com/736x/a1/9c/1a/a19c1a969a8a82f5cde6a7848feaa807.jpg',
@@ -53,7 +54,7 @@
     ['#6a4f8a', '#8a6a20'],
     ['#2f6b78', '#a8492f']
   ];
-  const words = ['Không Nha', 'Bấm đi mà', 'Đừng ngại', 'Thử lại nha', 'Bắt được không'];
+  let words = ['Không Nha', 'Bấm đi mà', 'Đừng ngại', 'Thử lại nha', 'Bắt được không'];
   const panel = document.querySelector('.panel');
   const img = document.getElementById('catImage');
   const no = document.getElementById('no');
@@ -97,6 +98,23 @@
 
   no.addEventListener('mouseenter', dodge);
   no.addEventListener('click', dodge);
+
+  loadContent().then((content) => {
+    const home = content.home || {};
+    if (home.eyebrow) document.getElementById('homeEyebrow').textContent = home.eyebrow;
+    if (home.title) document.getElementById('homeTitle').textContent = home.title;
+    if (home.lead) document.getElementById('homeLead').textContent = home.lead;
+    if (home.pageTitle) document.title = home.pageTitle;
+    if (home.yes) document.getElementById('yes').textContent = home.yes;
+    if (home.no) {
+      words[0] = home.no;
+      document.getElementById('no').textContent = home.no;
+    }
+    if (/^#[0-9a-f]{6}$/i.test(home.color || '')) {
+      document.documentElement.style.setProperty('--accent', home.color);
+    }
+    if (Array.isArray(home.images) && home.images.length) images = home.images;
+  });
 </script>
 </body>
 </html>

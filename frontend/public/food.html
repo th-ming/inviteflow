@@ -8,12 +8,13 @@
 <meta property="og:title" content="Một lời mời">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/food.html">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://inviteflow-api2.onrender.com';</script>
 </head>
 <body>
 <div class="app">
-  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Bước 2 / 4</span></header>
+  <header class="topbar"><span class="brand"><img src="assets/img/logo-micro.png" width="28" height="28" alt="">Inviteflow</span><span class="meta">Bước 2 / 4</span></header>
   <div class="layout">
     <nav class="rail" aria-label="Các bước">
       <div class="step done"><span class="num">01</span>Ngày</div>
@@ -24,7 +25,7 @@
     <main class="stage">
       <section class="panel">
         <p class="eyebrow">Món ăn</p>
-        <h1>Em muốn ăn món gì?</h1>
+        <h1 id="foodTitle">Em muốn ăn món gì?</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <div class="choice-grid" id="choices"></div>
         <p class="status" id="status"></p>
@@ -34,23 +35,20 @@
   </div>
 </div>
 <script type="module">
-  import { renderChoices, reveal, setStatus, go, toast } from './assets/js/app.js';
-  const special = 'Ăn Gì Cũng Được';
-  renderChoices([
-    { name: 'Cơm', image: 'https://i.pinimg.com/736x/ac/f2/14/acf21487e6638097f8e8922b153c1ffa.jpg' },
-    { name: 'Bún Bò', image: 'https://i.pinimg.com/736x/f4/41/e4/f441e4d163c5cc83ce64f29098ad34fa.jpg' },
-    { name: 'Phở Cuốn', image: 'https://i.pinimg.com/736x/6e/06/fe/6e06fe0a41b99505ebd6eec9175251f8.jpg' },
-    { name: 'Nem Nướng', image: 'https://i.pinimg.com/736x/dc/c9/c2/dcc9c227c62d5146b7f4785d5788dc35.jpg' },
-    { name: 'Bún Cá', image: 'https://i.pinimg.com/736x/b8/ae/1e/b8ae1e54f6f0a340c9ab911c55983f07.jpg' },
-    { name: 'Mì Cay', image: 'https://i.pinimg.com/736x/4e/a7/c2/4ea7c29e0afdbed1ac53d914a617a7fc.jpg' },
-    { name: special, image: 'https://i.pinimg.com/736x/15/c5/36/15c536783014eb6fa4bbc953021b3eb6.jpg' }
-  ], 'choices', 'food', (label) => {
-    setStatus('status', label === special
-      ? 'Ăn gì cho em tự chọn nha. Không nữa thì ăn anh nè 🤣'
-      : `Một ${label} sẽ được phục vụ`);
-    toast(label === special ? 'Ăn anh nè' : `Một ${label} sẽ được phục vụ`);
-    reveal('nextWrap');
-  });
+  import { renderChoices, reveal, setStatus, go, toast, loadContent } from './assets/js/app.js';
+
+  function render(page) {
+    if (page.title) document.getElementById('foodTitle').textContent = page.title;
+    const items = Array.isArray(page.items) && page.items.length ? page.items : [];
+    renderChoices(items, 'choices', 'food', (item) => {
+      const message = item.message || `Một ${item.name} sẽ được phục vụ`;
+      setStatus('status', message);
+      toast(message);
+      reveal('nextWrap');
+    });
+  }
+
+  loadContent().then((content) => render(content.food || {}));
   document.getElementById('next').addEventListener('click', () => go('drink.html'));
 </script>
 </body>

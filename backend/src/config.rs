@@ -11,6 +11,7 @@ pub struct AdminUser {
 pub struct Config {
     pub host: String,
     pub port: u16,
+    #[allow(dead_code)]
     pub admin_token: String,
     pub admin_users: Vec<AdminUser>,
     pub admin_file: String,

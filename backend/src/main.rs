@@ -29,6 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &config.admin_file,
         &config.github_token,
     );
+    let content_db = GithubDb::new(&config.github_repo, "content.json", &config.github_token);
 
     if args.iter().any(|arg| arg == "--backup") {
         let records = db.list().await?;
@@ -36,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let app = api::router(AppState::new(config.clone(), db, admin_db));
+    let app = api::router(AppState::new(config.clone(), db, admin_db, content_db));
     let address: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
     let listener = TcpListener::bind(address).await?;
     println!("api listening on http://{address}");

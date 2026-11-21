@@ -19,8 +19,9 @@ inviteflow/
 │       ├── drink.html     chọn nước (lưới ảnh)
 │       ├── place.html     chọn nơi (lưới ảnh)
 │       ├── done.html      phiếu hẹn + gửi API
-│       ├── admin.html     bảng quản lý
+│       ├── admin.html     bảng quản lý (giao diện tĩnh + API thật, login qua /api/login)
 │       ├── assets/css/    style.css (layout rail + lưới ảnh)
+│       ├── assets/img/    logo-mark.png, logo-micro.png, favicon.png (bộ nhận diện v1.0)
 │       ├── assets/js/     app.js (localStorage/UI), api.js (HTTP)
 │       ├── robots.txt
 │       ├── sitemap.xml
@@ -40,6 +41,7 @@ inviteflow/
 ├── scripts/
 │   ├── set-domain.ps1     thay YOUR_PROJECT + YOUR_API_HOST
 │   ├── deploy-fe.ps1      deploy FE qua Firebase token (không dùng)
+│   ├── backup.ps1         xuất content + responses qua /api/export
 │   └── build.ps1          fmt + test + clippy + release build
 └── docs/
     ├── architecture.md    sơ đồ + quyết định thiết kế
@@ -50,8 +52,10 @@ inviteflow/
 ## Luồng
 
 ```
-FE (Render static) -> API (Render Rust web service) -> GitHub JSON DB
+FE (Render static) -> API (Render Rust web service) -> GitHub JSON DB (responses.json + content.json + admin.json)
 ```
+
+Admin `/api/content` (GET public, PUT cần token editor/admin), `/api/responses` (GET public, POST public, PATCH/DELETE cần token), `/api/export` + `/api/restore` (cần token).
 
 ## Đổi tên miền
 

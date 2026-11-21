@@ -8,12 +8,13 @@
 <meta property="og:title" content="Một lời mời">
 <meta property="og:image" content="https://motloimoi.cc.cd/og-image.svg">
 <link rel="canonical" href="https://motloimoi.cc.cd/date.html">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="stylesheet" href="assets/css/style.css">
 <script>window.API_BASE = window.API_BASE || 'https://inviteflow-api2.onrender.com';</script>
 </head>
 <body>
 <div class="app">
-  <header class="topbar"><span class="brand">Inviteflow</span><span class="meta">Bước 1 / 4</span></header>
+  <header class="topbar"><span class="brand"><img src="assets/img/logo-micro.png" width="28" height="28" alt="">Inviteflow</span><span class="meta">Bước 1 / 4</span></header>
   <div class="layout">
     <nav class="rail" aria-label="Các bước">
       <div class="step active"><span class="num">01</span>Ngày</div>
@@ -24,9 +25,9 @@
     <main class="stage">
       <section class="panel">
         <p class="eyebrow">Ngày rảnh</p>
-        <h1>Em rảnh vào hàm nè</h1>
+        <h1 id="dateTitle">Em rảnh vào hàm nè</h1>
         <svg class="signature" viewBox="0 0 120 8" aria-hidden="true"><path d="M2 6c20-3 48-4 116-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <p class="lead">Chọn một ngày để cả hai cùng rảnh.</p>
+        <p class="lead" id="dateLead">Chọn một ngày để cả hai cùng rảnh.</p>
         <label class="eyebrow" for="datepicker">Ngày</label>
         <input class="field" type="date" id="datepicker" style="max-width:280px">
         <div class="actions">
@@ -40,7 +41,7 @@
   </div>
 </div>
 <script type="module">
-  import { save, go, formatDay, reveal, setStatus, toast } from './assets/js/app.js';
+  import { save, go, formatDay, reveal, setStatus, toast, loadContent } from './assets/js/app.js';
   const input = document.getElementById('datepicker');
   document.getElementById('pick').addEventListener('click', () => {
     if (!input.value) {
@@ -59,6 +60,12 @@
     document.getElementById('nextWrap').hidden = true;
   });
   document.getElementById('next').addEventListener('click', () => go('food.html'));
+
+  loadContent().then((content) => {
+    const page = content.date || {};
+    if (page.title) document.getElementById('dateTitle').textContent = page.title;
+    if (page.lead) document.getElementById('dateLead').textContent = page.lead;
+  });
 </script>
 </body>
 </html>
